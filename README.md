@@ -63,6 +63,11 @@
 
 
 
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| games | [GameEntry](#played.GameEntry) | repeated |  |
+
+
 
 
 

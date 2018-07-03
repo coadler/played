@@ -9,6 +9,8 @@ import (
 	"net"
 	"time"
 
+	"google.golang.org/grpc/codes"
+
 	"github.com/ThyLeader/played/pb"
 	"github.com/dgraph-io/badger"
 	"github.com/gogo/protobuf/proto"
@@ -182,15 +184,16 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 }
 
 func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
+	resp := new(pb.GetPlayedResponse)
+	resp.Games = []*pb.GameEntry{}
+
 	err := s.DB.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 
 		prefix := []byte(fmt.Sprintf("played:%s:games:", req.User))
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			item := it.Item()
-			k := item.Key()
-			v, err := item.Value()
+			v, err := it.Item().Value()
 			if err != nil {
 				return err
 			}
@@ -200,13 +203,15 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 			if err != nil {
 				return err
 			}
-			fmt.Printf("key=%s, value=%+v\n", k, entry)
+
+			resp.Games = append(resp.Games, entry)
 		}
 		return nil
 	})
 	if err != nil {
 		fmt.Println(err)
+		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}
 
-	return &pb.GetPlayedResponse{}, nil
+	return resp, nil
 }

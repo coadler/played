@@ -24,4 +24,6 @@ message GetPlayedRequest {
     string user = 1;
 }
 
-message GetPlayedResponse {}
+message GetPlayedResponse {
+    repeated GameEntry games = 1;
+}
