@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/ThyLeader/played/pb"
 	"google.golang.org/grpc"
@@ -21,20 +20,23 @@ func main() {
 		// defer cancel()
 		ctx := context.Background()
 
-		p, _ := c.SendPlayed(ctx)
-		game := 0
-		for game < 5 {
-			fmt.Println("sent request")
-			p.Send(&pb.SendPlayedRequest{
-				User: "105484726235607040",
-				Game: fmt.Sprintf("%d", game),
-			})
+		// p, _ := c.SendPlayed(ctx)
+		// game := 0
+		// for game < 5 {
+		// 	fmt.Println("sent request")
+		// 	p.Send(&pb.SendPlayedRequest{
+		// 		User: "105484726235607040",
+		// 		Game: fmt.Sprintf("%d", game),
+		// 	})
 
-			game++
-			time.Sleep(5 * time.Second)
+		// 	game++
+		// 	time.Sleep(5 * time.Second)
+		// }
+
+		res, _ := c.GetPlayed(ctx, &pb.GetPlayedRequest{User: "454072114492866560"})
+		for _, e := range res.Games {
+			fmt.Printf("%+v\n", *e)
 		}
-
-		c.GetPlayed(ctx, &pb.GetPlayedRequest{User: "105484726235607040"})
 	}()
 
 	end := make(chan struct{})

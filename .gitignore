@@ -1,0 +1,6 @@
+discord/main.go
+
+*.vlog
+*.sst
+LOCK
+MANIFEST

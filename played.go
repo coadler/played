@@ -56,7 +56,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return err
 		}
 
-		fmt.Printf("got msg: %+v", *msg)
+		fmt.Printf("got msg: %+v\n", *msg)
 
 		err = s.DB.Update(func(tx *badger.Txn) error {
 			timeNow := time.Now()
@@ -96,7 +96,6 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err
 				}
 
-				fmt.Println("first")
 				err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
 				if err != nil {
 					return err
@@ -125,7 +124,6 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			}
 
 			game := string(rawCurrent)
-			fmt.Println("current:", game)
 			if game != "" {
 				item, err := tx.Get(UserEntryKey(msg.User, game))
 				if err != nil {
