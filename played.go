@@ -54,6 +54,8 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return err
 		}
 
+		fmt.Printf("got msg: %+v", *msg)
+
 		err = s.DB.Update(func(tx *badger.Txn) error {
 			timeNow := time.Now()
 			var now [8]byte
