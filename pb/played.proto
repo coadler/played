@@ -1,0 +1,27 @@
+syntax = "proto3";
+package played;
+option go_package = "pb";
+
+service Played {
+    rpc SendPlayed(stream SendPlayedRequest) returns (SendPlayedResponse) {}
+
+    rpc GetPlayed (GetPlayedRequest) returns (GetPlayedResponse);
+}
+
+message SendPlayedRequest {
+    string user = 1;
+    string game = 2;
+}
+
+message GameEntry {
+    string name = 1;
+    int64 dur = 2;
+}
+
+message SendPlayedResponse {}
+
+message GetPlayedRequest {
+    string user = 1;
+}
+
+message GetPlayedResponse {}
