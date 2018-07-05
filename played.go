@@ -7,7 +7,10 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"time"
+
+	_ "expvar"
 
 	"google.golang.org/grpc/codes"
 
@@ -36,6 +39,8 @@ func Start() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
+	go http.ListenAndServe(":8081", nil)
 
 	srv := grpc.NewServer()
 	played := &PlayedServer{db}
