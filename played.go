@@ -277,26 +277,26 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	})
 	if err != nil {
 		fmt.Println(err)
-		return nil, grpc.Errorf(codes.Internal, err.Error())
+		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
 	return resp, nil
 }
 
 func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {
-	fmt.Printf("got whitelist: %+v", req)
+	fmt.Printf("got whitelist: %+v\n", req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
 	})
 
-	return nil, grpc.Errorf(codes.Internal, err.Error())
+	return &pb.AddUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
 }
 
 func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
-	fmt.Printf("got remove: %+v", req)
+	fmt.Printf("got remove: %+v\n", req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
 
-	return nil, grpc.Errorf(codes.Internal, err.Error())
+	return &pb.RemoveUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
 }
