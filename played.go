@@ -80,7 +80,11 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		var end bool
+		// bolt is much better for heavy random reads so i
+		// store the whitelist bucket in a separate bolt db.
+		// also helps contention
 		err = s.Bolt.View(func(tx *bolt.Tx) error {
+			// user isnt whitelisted, get out
 			if u := tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)); u == nil {
 				end = true
 			}
