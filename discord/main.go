@@ -13,10 +13,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	Token = ""
-)
-
 func main() {
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
