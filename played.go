@@ -34,13 +34,15 @@ func Start() {
 	opts.SyncWrites = false
 	db, err := badger.Open(opts)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer db.Close()
 
 	bdb, err := bolt.Open("bolt/whitelist.db", 0600, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer db.Close()
 
@@ -50,12 +52,14 @@ func Start() {
 		return err
 	})
 	if err != nil {
-		log.Fatalf("failed to create bolt bucket: %v", err)
+		log.Printf("failed to create bolt bucket: %v", err)
+		return
 	}
 
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Printf("failed to listen: %v", err)
+		return
 	}
 
 	go http.ListenAndServe(":8081", nil)
