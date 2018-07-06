@@ -1,3 +1,7 @@
+# played
+
+played is a GRPC + Protobuf microservice for tracking playing statuses on Discord
+
 # Protocol Documentation
 <a name="top"/>
 
