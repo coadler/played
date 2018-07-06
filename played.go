@@ -95,6 +95,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		if end {
+			fmt.Printf("not whitelisted: %+v\n", *msg)
 			continue
 		}
 
