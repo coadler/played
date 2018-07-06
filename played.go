@@ -289,7 +289,11 @@ func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb
 		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
 	})
 
-	return &pb.AddUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	if err != nil {
+		return &pb.AddUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	}
+
+	return &pb.AddUserResponse{}, nil
 }
 
 func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
@@ -297,6 +301,9 @@ func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
+	if err != nil {
+		return &pb.RemoveUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	}
 
-	return &pb.RemoveUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	return &pb.RemoveUserResponse{}, nil
 }
