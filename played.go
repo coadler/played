@@ -1,8 +1,10 @@
 package played
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
+	_ "expvar"
 	"fmt"
 	"io"
 	"log"
@@ -10,30 +12,46 @@ import (
 	"net/http"
 	"time"
 
-	_ "expvar"
-
-	"google.golang.org/grpc/codes"
-
 	"github.com/ThyLeader/played/pb"
+	"github.com/boltdb/bolt"
 	"github.com/dgraph-io/badger"
 	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 type PlayedServer struct {
-	DB *badger.DB
+	DB   *badger.DB
+	Bolt *bolt.DB
+
+	WhitelistBucket []byte
 }
 
 func Start() {
 	opts := badger.DefaultOptions
-	opts.Dir = "."
-	opts.ValueDir = "."
+	opts.Dir = "badger/"
+	opts.ValueDir = "badger/"
 	opts.SyncWrites = false
 	db, err := badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	bdb, err := bolt.Open("bolt/whitelist.db", 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	key := []byte("whitelist")
+	err = bdb.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(key)
+		return err
+	})
+	if err != nil {
+		log.Fatalf("failed to create bolt bucket: %v", err)
+	}
 
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -43,7 +61,7 @@ func Start() {
 	go http.ListenAndServe(":8081", nil)
 
 	srv := grpc.NewServer()
-	played := &PlayedServer{db}
+	played := &PlayedServer{db, bdb, key}
 	pb.RegisterPlayedServer(srv, played)
 	fmt.Println("Listening on port :8080")
 	srv.Serve(lis)
@@ -61,7 +79,49 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return err
 		}
 
+		var end bool
+		err = s.Bolt.View(func(tx *bolt.Tx) error {
+			if u := tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)); u == nil {
+				end = true
+			}
+			return nil
+		})
+		if err != nil {
+			return grpc.Errorf(codes.Internal, err.Error())
+		}
+
+		if end {
+			continue
+		}
+
 		fmt.Printf("got msg: %+v\n", *msg)
+
+		err = s.DB.View(func(tx *badger.Txn) error {
+			current, err := tx.Get(UserCurrentKey(msg.User))
+			if err != nil {
+				if err == badger.ErrKeyNotFound {
+					return nil
+				}
+
+				return err
+			}
+
+			v, err := current.Value()
+			if err != nil {
+				return err
+			}
+
+			// we can get up to 100 repeat presences,
+			// end early if we're getting an update for the current game.
+			// we also do this within a read transaction so we don't
+			// lock up the db
+			end = bytes.Equal(v, []byte(msg.Game))
+			return nil
+		})
+
+		if end {
+			continue
+		}
 
 		err = s.DB.Update(func(tx *badger.Txn) error {
 			timeNow := time.Now()
@@ -179,7 +239,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		})
 		if err != nil {
 			fmt.Println(err)
-			return nil
+			return grpc.Errorf(codes.Internal, err.Error())
 		}
 	}
 
@@ -217,4 +277,20 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	}
 
 	return resp, nil
+}
+
+func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {
+	err := s.Bolt.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
+	})
+
+	return nil, grpc.Errorf(codes.Internal, err.Error())
+}
+
+func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
+	err := s.Bolt.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
+	})
+
+	return nil, grpc.Errorf(codes.Internal, err.Error())
 }

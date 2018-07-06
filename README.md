@@ -4,9 +4,13 @@
 ## Table of Contents
 
 - [played.proto](#played.proto)
+    - [AddUserRequest](#played.AddUserRequest)
+    - [AddUserResponse](#played.AddUserResponse)
     - [GameEntry](#played.GameEntry)
     - [GetPlayedRequest](#played.GetPlayedRequest)
     - [GetPlayedResponse](#played.GetPlayedResponse)
+    - [RemoveUserRequest](#played.RemoveUserRequest)
+    - [RemoveUserResponse](#played.RemoveUserResponse)
     - [SendPlayedRequest](#played.SendPlayedRequest)
     - [SendPlayedResponse](#played.SendPlayedResponse)
   
@@ -23,6 +27,31 @@
 <p align="right"><a href="#top">Top</a></p>
 
 ## played.proto
+
+
+
+<a name="played.AddUserRequest"/>
+
+### AddUserRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| user | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="played.AddUserResponse"/>
+
+### AddUserResponse
+
+
+
+
 
 
 
@@ -72,6 +101,31 @@
 
 
 
+<a name="played.RemoveUserRequest"/>
+
+### RemoveUserRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| user | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="played.RemoveUserResponse"/>
+
+### RemoveUserResponse
+
+
+
+
+
+
+
 <a name="played.SendPlayedRequest"/>
 
 ### SendPlayedRequest
@@ -113,6 +167,8 @@
 | ----------- | ------------ | ------------- | ------------|
 | SendPlayed | [SendPlayedRequest](#played.SendPlayedRequest) | [SendPlayedResponse](#played.SendPlayedRequest) |  |
 | GetPlayed | [GetPlayedRequest](#played.GetPlayedRequest) | [GetPlayedResponse](#played.GetPlayedRequest) |  |
+| AddUser | [AddUserRequest](#played.AddUserRequest) | [AddUserResponse](#played.AddUserRequest) |  |
+| RemoveUser | [RemoveUserRequest](#played.RemoveUserRequest) | [RemoveUserResponse](#played.RemoveUserRequest) |  |
 
  
 

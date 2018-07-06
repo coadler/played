@@ -5,7 +5,11 @@ option go_package = "pb";
 service Played {
     rpc SendPlayed(stream SendPlayedRequest) returns (SendPlayedResponse) {}
 
-    rpc GetPlayed (GetPlayedRequest) returns (GetPlayedResponse);
+    rpc GetPlayed (GetPlayedRequest) returns (GetPlayedResponse) {}
+
+    rpc AddUser (AddUserRequest) returns (AddUserResponse) {}
+
+    rpc RemoveUser (RemoveUserRequest) returns (RemoveUserResponse) {}
 }
 
 message SendPlayedRequest {
@@ -27,3 +31,15 @@ message GetPlayedRequest {
 message GetPlayedResponse {
     repeated GameEntry games = 1;
 }
+
+message AddUserRequest {
+    string user = 1;
+}
+
+message AddUserResponse {}
+
+message RemoveUserRequest {
+    string user = 1;
+}
+
+message RemoveUserResponse {}
