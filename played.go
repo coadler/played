@@ -284,6 +284,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 }
 
 func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {
+	fmt.Printf("got whitelist: %+v", *req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
 	})
@@ -292,6 +293,7 @@ func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb
 }
 
 func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
+	fmt.Printf("got remove: %+v", *req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
