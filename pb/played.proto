@@ -10,6 +10,8 @@ service Played {
     rpc AddUser (AddUserRequest) returns (AddUserResponse) {}
 
     rpc RemoveUser (RemoveUserRequest) returns (RemoveUserResponse) {}
+
+    rpc CheckWhitelist (CheckWhitelistRequest) returns (CheckWhiteListResponse) {}
 }
 
 message SendPlayedRequest {
@@ -19,7 +21,7 @@ message SendPlayedRequest {
 
 message GameEntry {
     string name = 1;
-    int64 dur = 2;
+    int32 dur = 2;
 }
 
 message SendPlayedResponse {}
@@ -43,3 +45,11 @@ message RemoveUserRequest {
 }
 
 message RemoveUserResponse {}
+
+message CheckWhitelistRequest {
+    string user = 1;
+}
+
+message CheckWhiteListResponse {
+    bool whitelisted = 1;
+}

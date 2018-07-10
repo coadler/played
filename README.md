@@ -10,6 +10,8 @@ played is a GRPC + Protobuf microservice for tracking playing statuses on Discor
 - [played.proto](#played.proto)
     - [AddUserRequest](#played.AddUserRequest)
     - [AddUserResponse](#played.AddUserResponse)
+    - [CheckWhiteListResponse](#played.CheckWhiteListResponse)
+    - [CheckWhitelistRequest](#played.CheckWhitelistRequest)
     - [GameEntry](#played.GameEntry)
     - [GetPlayedRequest](#played.GetPlayedRequest)
     - [GetPlayedResponse](#played.GetPlayedResponse)
@@ -59,6 +61,36 @@ played is a GRPC + Protobuf microservice for tracking playing statuses on Discor
 
 
 
+<a name="played.CheckWhiteListResponse"/>
+
+### CheckWhiteListResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| whitelisted | [bool](#bool) |  |  |
+
+
+
+
+
+
+<a name="played.CheckWhitelistRequest"/>
+
+### CheckWhitelistRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| user | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="played.GameEntry"/>
 
 ### GameEntry
@@ -68,7 +100,7 @@ played is a GRPC + Protobuf microservice for tracking playing statuses on Discor
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
-| dur | [int64](#int64) |  |  |
+| dur | [int32](#int32) |  |  |
 
 
 
@@ -173,6 +205,7 @@ played is a GRPC + Protobuf microservice for tracking playing statuses on Discor
 | GetPlayed | [GetPlayedRequest](#played.GetPlayedRequest) | [GetPlayedResponse](#played.GetPlayedRequest) |  |
 | AddUser | [AddUserRequest](#played.AddUserRequest) | [AddUserResponse](#played.AddUserRequest) |  |
 | RemoveUser | [RemoveUserRequest](#played.RemoveUserRequest) | [RemoveUserResponse](#played.RemoveUserRequest) |  |
+| CheckWhitelist | [CheckWhitelistRequest](#played.CheckWhitelistRequest) | [CheckWhiteListResponse](#played.CheckWhitelistRequest) |  |
 
  
 
