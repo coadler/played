@@ -34,13 +34,15 @@ func Start() {
 	opts.SyncWrites = false
 	db, err := badger.Open(opts)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer db.Close()
 
 	bdb, err := bolt.Open("bolt/whitelist.db", 0600, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer db.Close()
 
@@ -50,12 +52,14 @@ func Start() {
 		return err
 	})
 	if err != nil {
-		log.Fatalf("failed to create bolt bucket: %v", err)
+		log.Printf("failed to create bolt bucket: %v", err)
+		return
 	}
 
 	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Printf("failed to listen: %v", err)
+		return
 	}
 
 	go http.ListenAndServe(":8081", nil)
@@ -95,6 +99,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		if end {
+			fmt.Printf("not whitelisted: %+v\n", *msg)
 			continue
 		}
 
@@ -277,24 +282,33 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	})
 	if err != nil {
 		fmt.Println(err)
-		return nil, grpc.Errorf(codes.Internal, err.Error())
+		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
 	return resp, nil
 }
 
 func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {
+	fmt.Printf("got whitelist: %+v\n", req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
 	})
 
-	return nil, grpc.Errorf(codes.Internal, err.Error())
+	if err != nil {
+		return &pb.AddUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	}
+
+	return &pb.AddUserResponse{}, nil
 }
 
 func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
+	fmt.Printf("got remove: %+v\n", req)
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
+	if err != nil {
+		return &pb.RemoveUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	}
 
-	return nil, grpc.Errorf(codes.Internal, err.Error())
+	return &pb.RemoveUserResponse{}, nil
 }
