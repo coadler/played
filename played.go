@@ -84,10 +84,12 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		var end bool
+		// bolt is much better for heavy random reads so i
+		// store the whitelist bucket in a separate bolt db.
+		// also helps lock contentions
 		err = s.Bolt.View(func(tx *bolt.Tx) error {
-			if u := tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)); u == nil {
-				end = true
-			}
+			// user isnt whitelisted, get out
+			end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
 			return nil
 		})
 		if err != nil {
@@ -129,9 +131,13 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		err = s.DB.Update(func(tx *badger.Txn) error {
-			timeNow := time.Now()
-			var now [8]byte
-			var err error
+			var (
+				timeNow = time.Now()
+				// 64 bit
+				now [8]byte
+				err error
+			)
+
 			binary.BigEndian.PutUint64(now[:], uint64(timeNow.Unix()))
 
 			if _, err := tx.Get(UserFirstSeenKey(msg.User)); err == badger.ErrKeyNotFound {
@@ -203,7 +209,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 
 					raw, err := proto.Marshal(&pb.GameEntry{
 						Name: game,
-						Dur:  int64(timeNow.Sub(lastChanged).Seconds()),
+						Dur:  int32(timeNow.Sub(lastChanged).Seconds()),
 					})
 					if err != nil {
 						return err
@@ -227,7 +233,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err
 				}
 
-				entry.Dur += int64(timeNow.Sub(lastChanged).Seconds())
+				entry.Dur += int32(timeNow.Sub(lastChanged).Seconds())
 
 				rawEntry, err = proto.Marshal(entry)
 				if err != nil {
@@ -307,4 +313,20 @@ func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest
 	}
 
 	return &pb.RemoveUserResponse{}, nil
+}
+
+func (s *PlayedServer) CheckWhitelist(ctx context.Context, req *pb.CheckWhitelistRequest) (*pb.CheckWhiteListResponse, error) {
+	fmt.Printf("got whitelist check: %+v\n", req)
+	whitelisted := false
+	err := s.Bolt.View(func(tx *bolt.Tx) error {
+		whitelisted = tx.Bucket(s.WhitelistBucket).Get([]byte(req.User)) != nil
+		return nil
+	})
+	if err != nil {
+		return &pb.CheckWhiteListResponse{}, grpc.Errorf(codes.Internal, err.Error())
+	}
+
+	return &pb.CheckWhiteListResponse{
+		Whitelisted: whitelisted,
+	}, nil
 }
