@@ -75,7 +75,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 	for {
 		msg, err := stream.Recv()
 		if err == io.EOF {
-			return stream.SendAndClose(nil)
+			return stream.SendAndClose(&pb.SendPlayedResponse{})
 		}
 
 		if err != nil {
