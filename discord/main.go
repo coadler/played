@@ -128,22 +128,33 @@ func guildCreate(c pb.PlayedClient) func(s *discordgo.Session, g *discordgo.Guil
 
 func messageCreate(c pb.PlayedClient) func(s *discordgo.Session, m *discordgo.MessageCreate) {
 	return func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		if m.Content != "pls played" {
+		if m.Content == "pls played" {
+			ctx := context.Background()
+			res, err := c.GetPlayed(ctx, &pb.GetPlayedRequest{User: m.Author.ID})
+			if err != nil {
+				fmt.Println(err)
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+			}
+
+			buf := new(strings.Builder)
+			for _, e := range res.Games {
+				buf.WriteString(fmt.Sprintf("%+v\n", e))
+			}
+
+			s.ChannelMessageSend(m.ChannelID, buf.String())
 			return
 		}
 
-		ctx := context.Background()
-		res, err := c.GetPlayed(ctx, &pb.GetPlayedRequest{User: m.Author.ID})
-		if err != nil {
-			fmt.Println(err)
-			s.ChannelMessageSend(m.ChannelID, err.Error())
+		if m.Content == "pls whitelist" {
+			ctx := context.Background()
+			_, err := c.AddUser(ctx, &pb.AddUserRequest{User: m.Author.ID})
+			if err != nil {
+				fmt.Println(err)
+				s.ChannelMessageSend(m.ChannelID, err.Error())
+			}
+
+			s.ChannelMessageSend(m.ChannelID, ":ok_hand:")
 		}
 
-		buf := new(strings.Builder)
-		for _, e := range res.Games {
-			buf.WriteString(fmt.Sprintf("%+v\n", e))
-		}
-
-		s.ChannelMessageSend(m.ChannelID, buf.String())
 	}
 }
