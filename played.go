@@ -97,7 +97,9 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		// allow approx 1% of requests through
-		end = end || msg.User[:2] == "24"
+		// u, _ := strconv.ParseInt(msg.User, 10, 64)
+
+		end = end && !msg.User[:2] == "24"
 
 		if end {
 			continue
