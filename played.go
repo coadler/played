@@ -100,7 +100,6 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		end = end || msg.User[:2] == "50"
 
 		if end {
-			fmt.Printf("not whitelisted: %+v\n", *msg)
 			continue
 		}
 
