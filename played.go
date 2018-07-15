@@ -10,7 +10,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"sort"
 	"time"
+
+	"github.com/dustin/go-humanize"
 
 	"github.com/ThyLeader/played/pb"
 	"github.com/boltdb/bolt"
@@ -284,6 +287,33 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 
 			resp.Games = append(resp.Games, entry)
 		}
+		{
+			i, err := txn.Get(UserFirstSeenKey(req.User))
+			if err != nil {
+				return err
+			}
+
+			first, err := i.Value()
+			if err != nil {
+				return err
+			}
+
+			resp.First = humanize.Time(time.Unix(int64(binary.BigEndian.Uint64(first)), 0))
+		}
+		{
+			i, err := txn.Get(UserLastChangedKey(req.User))
+			if err != nil {
+				return err
+			}
+
+			last, err := i.Value()
+			if err != nil {
+				return err
+			}
+
+			resp.Last = humanize.Time(time.Unix(int64(binary.BigEndian.Uint64(last)), 0))
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -291,5 +321,6 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
+	sort.Sort(resp)
 	return resp, nil
 }

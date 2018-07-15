@@ -1,7 +1,3 @@
-# played
-
-played is a GRPC + Protobuf microservice for tracking playing statuses on Discord
-
 # Protocol Documentation
 <a name="top"/>
 
@@ -131,6 +127,8 @@ played is a GRPC + Protobuf microservice for tracking playing statuses on Discor
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | games | [GameEntry](#played.GameEntry) | repeated |  |
+| first | [string](#string) |  |  |
+| last | [string](#string) |  |  |
 
 
 

@@ -32,6 +32,8 @@ message GetPlayedRequest {
 
 message GetPlayedResponse {
     repeated GameEntry games = 1;
+    string first = 2;
+    string last = 3;
 }
 
 message AddUserRequest {
