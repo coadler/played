@@ -24,6 +24,11 @@ message GameEntry {
     int32 dur = 2;
 }
 
+message GameEntryPublic {
+    string name = 1;
+    string dur = 2;
+}
+
 message SendPlayedResponse {}
 
 message GetPlayedRequest {
@@ -31,7 +36,7 @@ message GetPlayedRequest {
 }
 
 message GetPlayedResponse {
-    repeated GameEntry games = 1;
+    repeated GameEntryPublic games = 1;
     string first = 2;
     string last = 3;
 }

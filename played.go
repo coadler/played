@@ -266,7 +266,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 
 func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
 	resp := new(pb.GetPlayedResponse)
-	resp.Games = []*pb.GameEntry{}
+	resp.Games = []*pb.GameEntryPublic{}
 
 	err := s.DB.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -285,7 +285,10 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 				return err
 			}
 
-			resp.Games = append(resp.Games, entry)
+			resp.Games = append(resp.Games, &pb.GameEntryPublic{
+				Name: entry.Name,
+				Dur:  (time.Duration(entry.Dur) * time.Second).String(),
+			})
 		}
 		{
 			i, err := txn.Get(UserFirstSeenKey(req.User))

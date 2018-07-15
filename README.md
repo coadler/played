@@ -9,6 +9,7 @@
     - [CheckWhiteListResponse](#played.CheckWhiteListResponse)
     - [CheckWhitelistRequest](#played.CheckWhitelistRequest)
     - [GameEntry](#played.GameEntry)
+    - [GameEntryPublic](#played.GameEntryPublic)
     - [GetPlayedRequest](#played.GetPlayedRequest)
     - [GetPlayedResponse](#played.GetPlayedResponse)
     - [RemoveUserRequest](#played.RemoveUserRequest)
@@ -103,6 +104,22 @@
 
 
 
+<a name="played.GameEntryPublic"/>
+
+### GameEntryPublic
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  |  |
+| dur | [string](#string) |  |  |
+
+
+
+
+
+
 <a name="played.GetPlayedRequest"/>
 
 ### GetPlayedRequest
@@ -126,7 +143,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| games | [GameEntry](#played.GameEntry) | repeated |  |
+| games | [GameEntryPublic](#played.GameEntryPublic) | repeated |  |
 | first | [string](#string) |  |  |
 | last | [string](#string) |  |  |
 
