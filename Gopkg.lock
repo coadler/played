@@ -32,6 +32,12 @@
   revision = "2de33835d10275975374b37b2dcfd22c9020a1f5"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "9f541cc9db5d55bce703bd99987c9d5cb8eea45e"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
   revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
@@ -94,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a111c242b58ba3810a2737534f4717d29b35ce36abcd973705a59fdceb77201d"
+  inputs-digest = "46a1fe6eef32e49be605b9c157fe42cdca7349296aff7a4812e48d1d222ac143"
   solver-name = "gps-cdcl"
   solver-version = 1
