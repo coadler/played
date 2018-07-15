@@ -320,6 +320,10 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 		return nil
 	})
 	if err != nil {
+		if err == badger.ErrKeyNotFound {
+			return resp, nil
+		}
+
 		fmt.Println(err)
 		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
