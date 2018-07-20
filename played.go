@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"net/http"
 	"sort"
 	"time"
 
@@ -59,13 +58,13 @@ func Start() {
 		return
 	}
 
-	lis, err := net.Listen("tcp", ":8080")
+	lis, err := net.Listen("tcp", ":8089")
 	if err != nil {
 		log.Printf("failed to listen: %v", err)
 		return
 	}
 
-	go http.ListenAndServe(":8089", nil)
+	// go http.ListenAndServe(":8089", nil)
 
 	srv := grpc.NewServer()
 	played := &PlayedServer{db, bdb, key}
