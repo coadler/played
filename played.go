@@ -69,7 +69,7 @@ func Start() {
 	srv := grpc.NewServer()
 	played := &PlayedServer{db, bdb, key}
 	pb.RegisterPlayedServer(srv, played)
-	fmt.Println("Listening on port :8080")
+	fmt.Println("Listening on port :8089")
 	srv.Serve(lis)
 }
 
