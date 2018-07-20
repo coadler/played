@@ -65,7 +65,7 @@ func Start() {
 		return
 	}
 
-	go http.ListenAndServe(":8081", nil)
+	go http.ListenAndServe(":8089", nil)
 
 	srv := grpc.NewServer()
 	played := &PlayedServer{db, bdb, key}
