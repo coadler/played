@@ -259,6 +259,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
 	resp := new(pb.GetPlayedResponse)
 	resp.Games = []*pb.GameEntryPublic{}
+	gms := Games{}
 
 	err := s.DB.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
@@ -277,10 +278,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 				return err
 			}
 
-			resp.Games = append(resp.Games, &pb.GameEntryPublic{
-				Name: entry.Name,
-				Dur:  (time.Duration(entry.Dur) * time.Second).String(),
-			})
+			gms = append(gms, entry)
 		}
 		{
 			i, err := txn.Get(UserFirstSeenKey(req.User))
@@ -320,6 +318,26 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
-	sort.Sort(resp)
+	sort.Sort(gms)
+	for _, e := range gms {
+		resp.Games = append(resp.Games, &pb.GameEntryPublic{
+			Name: e.Name,
+			Dur:  (time.Duration(e.Dur) * time.Second).String(),
+		})
+	}
 	return resp, nil
+}
+
+type Games []*pb.GameEntry
+
+func (g Games) Len() int {
+	return len(g)
+}
+
+func (g Games) Swap(i, j int) {
+	g[i], g[j] = g[j], g[i]
+}
+
+func (g Games) Less(i, j int) bool {
+	return g[i].Dur >= g[j].Dur
 }
