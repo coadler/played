@@ -9,5 +9,5 @@ func (g *GetPlayedResponse) Swap(i, j int) {
 }
 
 func (g *GetPlayedResponse) Less(i, j int) bool {
-	return g.Games[i].Dur >= g.Games[i].Dur
+	return g.Games[i].Dur >= g.Games[j].Dur
 }
