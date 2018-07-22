@@ -98,16 +98,9 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return grpc.Errorf(codes.Internal, err.Error())
 		}
 
-		// allow approx 1% of requests through
-		// u, _ := strconv.ParseInt(msg.User, 10, 64)
-
-		end = end && !(msg.User[:2] == "24")
-
 		if end {
 			continue
 		}
-
-		fmt.Printf("got msg: %+v\n", *msg)
 
 		err = s.DB.View(func(tx *badger.Txn) error {
 			current, err := tx.Get(UserCurrentKey(msg.User))
