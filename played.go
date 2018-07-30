@@ -270,7 +270,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return s.processPlayed(msg)
 				})
 			if err != nil {
-				s.log.Error("processPlayed returned an error", zap.Error(err))
+				s.log.Error("failed to process played message", zap.Error(err))
 			}
 		}()
 
