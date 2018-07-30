@@ -12,12 +12,12 @@ import (
 	"sort"
 	"time"
 
+	"github.com/codercom/retry"
 	"github.com/dustin/go-humanize"
 
 	"github.com/ThyLeader/played/pb"
 	"github.com/boltdb/bolt"
 	"github.com/dgraph-io/badger"
-	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -58,7 +58,7 @@ func Start() {
 		return
 	}
 
-	lis, err := net.Listen("tcp", ":8089")
+	lis, err := net.Listen("tcp", "localhost:8089")
 	if err != nil {
 		log.Printf("failed to listen: %v", err)
 		return
@@ -87,7 +87,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 		return nil
 	})
 	if err != nil {
-		return grpc.Errorf(codes.Internal, err.Error())
+		return err
 	}
 
 	if end {
@@ -198,10 +198,10 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 					return err
 				}
 
-				raw, err := proto.Marshal(&pb.GameEntry{
+				raw, err := (&pb.GameEntry{
 					Name: game,
 					Dur:  int32(timeNow.Sub(lastChanged).Seconds()),
-				})
+				}).Marshal()
 				if err != nil {
 					return err
 				}
@@ -219,14 +219,14 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 			if err != nil {
 				return err
 			}
-			err = proto.Unmarshal(rawEntry, entry)
+			err = entry.Unmarshal(rawEntry)
 			if err != nil {
 				return err
 			}
 
 			entry.Dur += int32(timeNow.Sub(lastChanged).Seconds())
 
-			rawEntry, err = proto.Marshal(entry)
+			rawEntry, err = entry.Marshal()
 			if err != nil {
 				return err
 			}
@@ -240,8 +240,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 		return nil
 	})
 	if err != nil {
-		fmt.Println(err)
-		return grpc.Errorf(codes.Internal, err.Error())
+		return err
 	}
 
 	return nil
@@ -255,10 +254,15 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		go func() {
-			err := s.processPlayed(msg)
+			err := retry.
+				New(5 * time.Millisecond).
+				Timeout(2 * time.Second).
+				Backoff(200 * time.Millisecond).
+				Run(func() error {
+					return s.processPlayed(msg)
+				})
 			if err != nil {
 				fmt.Println(err)
-				// return err
 			}
 		}()
 
@@ -283,7 +287,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 			}
 
 			entry := new(pb.GameEntry)
-			err = proto.Unmarshal(v, entry)
+			err = entry.Unmarshal(v)
 			if err != nil {
 				return err
 			}
