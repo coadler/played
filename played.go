@@ -266,9 +266,8 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return stream.SendAndClose(&pb.SendPlayedResponse{})
 		}
 
+		msg2 := *msg
 		go func() {
-			msg := *msg
-
 			err := retry.
 				New(5 * time.Millisecond).
 				Timeout(2 * time.Second).
@@ -277,7 +276,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err == badger.ErrConflict
 				}).
 				Run(func() error {
-					return s.processPlayed(&msg)
+					return s.processPlayed(&msg2)
 				})
 			if err != nil {
 				s.log.Error("failed to process played message", zap.Error(err))
