@@ -22,6 +22,7 @@ import (
 	"github.com/dgraph-io/badger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type PlayedServer struct {
@@ -82,9 +83,10 @@ func Start() {
 	srv.Serve(lis)
 }
 
-func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
-	if msg == nil {
-		return errors.New("processPlayed called with nil msg")
+func (s *PlayedServer) processPlayed(user, game string) error {
+	if user == "" || game == "" {
+		s.log.Error("processPlayed called with empty user or game", zap.String("user", user), zap.String("game", game))
+		return errors.New("can't process empty user or game")
 	}
 
 	var (
@@ -96,7 +98,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 	// also helps lock contentions
 	err = s.Bolt.View(func(tx *bolt.Tx) error {
 		// user isnt whitelisted, get out
-		end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
+		end = tx.Bucket(s.WhitelistBucket).Get([]byte(user)) == nil
 		return nil
 	})
 	if err != nil {
@@ -108,7 +110,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 	}
 
 	err = s.DB.View(func(tx *badger.Txn) error {
-		current, err := tx.Get(UserCurrentKey(msg.User))
+		current, err := tx.Get(UserCurrentKey(user))
 		if err != nil {
 			if err == badger.ErrKeyNotFound {
 				return nil
@@ -126,7 +128,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 		// end early if we're getting an update for the current game.
 		// we also do this within a read transaction so we don't
 		// lock up the db
-		end = bytes.Equal(v, []byte(msg.Game))
+		end = bytes.Equal(v, []byte(user))
 		return nil
 	})
 
@@ -144,20 +146,20 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 
 		binary.BigEndian.PutUint64(now[:], uint64(timeNow.Unix()))
 
-		if _, err := tx.Get(UserFirstSeenKey(msg.User)); err == badger.ErrKeyNotFound {
-			err = tx.Set(UserFirstSeenKey(msg.User), now[:])
+		if _, err := tx.Get(UserFirstSeenKey(user)); err == badger.ErrKeyNotFound {
+			err = tx.Set(UserFirstSeenKey(user), now[:])
 			if err != nil {
 				return err
 			}
 		}
 
 		lastChanged := timeNow
-		if item, err := tx.Get(UserLastChangedKey(msg.User)); err != nil {
+		if item, err := tx.Get(UserLastChangedKey(user)); err != nil {
 			if err != badger.ErrKeyNotFound {
 				return err
 			}
 
-			err = tx.Set(UserLastChangedKey(msg.User), now[:])
+			err = tx.Set(UserLastChangedKey(user), now[:])
 			if err != nil {
 				return err
 			}
@@ -170,18 +172,18 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 			lastChanged = time.Unix(int64(binary.BigEndian.Uint64(raw)), 0)
 		}
 
-		item, err := tx.Get(UserCurrentKey(msg.User))
+		item, err := tx.Get(UserCurrentKey(user))
 		if err != nil {
 			if err != badger.ErrKeyNotFound {
 				return err
 			}
 
-			err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
+			err = tx.Set(UserCurrentKey(user), []byte(user))
 			if err != nil {
 				return err
 			}
 
-			err = tx.Set(UserLastChangedKey(msg.User), now[:])
+			err = tx.Set(UserLastChangedKey(user), now[:])
 			if err != nil {
 				return err
 			}
@@ -193,19 +195,19 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 			return err
 		}
 
-		err = tx.Set(UserLastChangedKey(msg.User), now[:])
+		err = tx.Set(UserLastChangedKey(user), now[:])
 		if err != nil {
 			return err
 		}
 
-		err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
+		err = tx.Set(UserCurrentKey(user), []byte(user))
 		if err != nil {
 			return err
 		}
 
 		game := string(rawCurrent)
 		if game != "" {
-			item, err := tx.Get(UserEntryKey(msg.User, game))
+			item, err := tx.Get(UserEntryKey(user, game))
 			if err != nil {
 				if err != badger.ErrKeyNotFound {
 					return err
@@ -219,7 +221,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 					return err
 				}
 
-				err = tx.Set(UserEntryKey(msg.User, game), raw)
+				err = tx.Set(UserEntryKey(user, game), raw)
 				if err != nil {
 					return err
 				}
@@ -244,7 +246,7 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 				return err
 			}
 
-			err = tx.Set(UserEntryKey(msg.User, game), rawEntry)
+			err = tx.Set(UserEntryKey(user, game), rawEntry)
 			if err != nil {
 				return err
 			}
@@ -266,7 +268,12 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return stream.SendAndClose(&pb.SendPlayedResponse{})
 		}
 
-		msg2 := *msg
+		if msg == nil {
+			s.log.Error("msg is nil (!)")
+			return status.Errorf(codes.Internal, "msg became nil")
+		}
+
+		user, game := msg.User, msg.Game
 		go func() {
 			err := retry.
 				New(5 * time.Millisecond).
@@ -276,7 +283,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err == badger.ErrConflict
 				}).
 				Run(func() error {
-					return s.processPlayed(&msg2)
+					return s.processPlayed(user, game)
 				})
 			if err != nil {
 				s.log.Error("failed to process played message", zap.Error(err))
