@@ -83,6 +83,10 @@ func Start() {
 }
 
 func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
+	if msg == nil {
+		return errors.New("processPlayed called with nil msg")
+	}
+
 	var (
 		err error
 		end bool
@@ -92,9 +96,6 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 	// also helps lock contentions
 	err = s.Bolt.View(func(tx *bolt.Tx) error {
 		// user isnt whitelisted, get out
-		if msg.User == "" {
-			return errors.New("received empty user in msg")
-		}
 		end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
 		return nil
 	})
