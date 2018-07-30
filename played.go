@@ -73,117 +73,97 @@ func Start() {
 	srv.Serve(lis)
 }
 
-func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
-	for {
-		msg, err := stream.Recv()
-		if err == io.EOF {
-			return stream.SendAndClose(&pb.SendPlayedResponse{})
-		}
+func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
+	var (
+		err error
+		end bool
+	)
+	// bolt is much better for heavy random reads so i
+	// store the whitelist bucket in a separate bolt db.
+	// also helps lock contentions
+	err = s.Bolt.View(func(tx *bolt.Tx) error {
+		// user isnt whitelisted, get out
+		end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
+		return nil
+	})
+	if err != nil {
+		return grpc.Errorf(codes.Internal, err.Error())
+	}
 
+	if end {
+		return nil
+	}
+
+	err = s.DB.View(func(tx *badger.Txn) error {
+		current, err := tx.Get(UserCurrentKey(msg.User))
 		if err != nil {
-			fmt.Println(err)
+			if err == badger.ErrKeyNotFound {
+				return nil
+			}
+
 			return err
 		}
 
-		var end bool
-		// bolt is much better for heavy random reads so i
-		// store the whitelist bucket in a separate bolt db.
-		// also helps lock contentions
-		err = s.Bolt.View(func(tx *bolt.Tx) error {
-			// user isnt whitelisted, get out
-			end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
-			return nil
-		})
+		v, err := current.Value()
 		if err != nil {
-			return grpc.Errorf(codes.Internal, err.Error())
+			return err
 		}
 
-		if end {
-			continue
-		}
+		// we can get up to 100 repeat presences,
+		// end early if we're getting an update for the current game.
+		// we also do this within a read transaction so we don't
+		// lock up the db
+		end = bytes.Equal(v, []byte(msg.Game))
+		return nil
+	})
 
-		err = s.DB.View(func(tx *badger.Txn) error {
-			current, err := tx.Get(UserCurrentKey(msg.User))
+	if end {
+		return nil
+	}
+
+	err = s.DB.Update(func(tx *badger.Txn) error {
+		var (
+			timeNow = time.Now()
+			// 64 bit
+			now [8]byte
+			err error
+		)
+
+		binary.BigEndian.PutUint64(now[:], uint64(timeNow.Unix()))
+
+		if _, err := tx.Get(UserFirstSeenKey(msg.User)); err == badger.ErrKeyNotFound {
+			err = tx.Set(UserFirstSeenKey(msg.User), now[:])
 			if err != nil {
-				if err == badger.ErrKeyNotFound {
-					return nil
-				}
+				return err
+			}
+		}
 
+		lastChanged := timeNow
+		if item, err := tx.Get(UserLastChangedKey(msg.User)); err != nil {
+			if err != badger.ErrKeyNotFound {
 				return err
 			}
 
-			v, err := current.Value()
+			err = tx.Set(UserLastChangedKey(msg.User), now[:])
+			if err != nil {
+				return err
+			}
+		} else {
+			raw, err := item.Value()
 			if err != nil {
 				return err
 			}
 
-			// we can get up to 100 repeat presences,
-			// end early if we're getting an update for the current game.
-			// we also do this within a read transaction so we don't
-			// lock up the db
-			end = bytes.Equal(v, []byte(msg.Game))
-			return nil
-		})
-
-		if end {
-			continue
+			lastChanged = time.Unix(int64(binary.BigEndian.Uint64(raw)), 0)
 		}
 
-		err = s.DB.Update(func(tx *badger.Txn) error {
-			var (
-				timeNow = time.Now()
-				// 64 bit
-				now [8]byte
-				err error
-			)
-
-			binary.BigEndian.PutUint64(now[:], uint64(timeNow.Unix()))
-
-			if _, err := tx.Get(UserFirstSeenKey(msg.User)); err == badger.ErrKeyNotFound {
-				err = tx.Set(UserFirstSeenKey(msg.User), now[:])
-				if err != nil {
-					return err
-				}
+		item, err := tx.Get(UserCurrentKey(msg.User))
+		if err != nil {
+			if err != badger.ErrKeyNotFound {
+				return err
 			}
 
-			lastChanged := timeNow
-			if item, err := tx.Get(UserLastChangedKey(msg.User)); err != nil {
-				if err != badger.ErrKeyNotFound {
-					return err
-				}
-
-				err = tx.Set(UserLastChangedKey(msg.User), now[:])
-				if err != nil {
-					return err
-				}
-			} else {
-				raw, err := item.Value()
-				if err != nil {
-					return err
-				}
-
-				lastChanged = time.Unix(int64(binary.BigEndian.Uint64(raw)), 0)
-			}
-
-			item, err := tx.Get(UserCurrentKey(msg.User))
-			if err != nil {
-				if err != badger.ErrKeyNotFound {
-					return err
-				}
-
-				err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
-				if err != nil {
-					return err
-				}
-
-				err = tx.Set(UserLastChangedKey(msg.User), now[:])
-				if err != nil {
-					return err
-				}
-
-				return nil
-			}
-			rawCurrent, err := item.Value()
+			err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
 			if err != nil {
 				return err
 			}
@@ -193,66 +173,96 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 				return err
 			}
 
-			err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
+			return nil
+		}
+		rawCurrent, err := item.Value()
+		if err != nil {
+			return err
+		}
+
+		err = tx.Set(UserLastChangedKey(msg.User), now[:])
+		if err != nil {
+			return err
+		}
+
+		err = tx.Set(UserCurrentKey(msg.User), []byte(msg.Game))
+		if err != nil {
+			return err
+		}
+
+		game := string(rawCurrent)
+		if game != "" {
+			item, err := tx.Get(UserEntryKey(msg.User, game))
+			if err != nil {
+				if err != badger.ErrKeyNotFound {
+					return err
+				}
+
+				raw, err := proto.Marshal(&pb.GameEntry{
+					Name: game,
+					Dur:  int32(timeNow.Sub(lastChanged).Seconds()),
+				})
+				if err != nil {
+					return err
+				}
+
+				err = tx.Set(UserEntryKey(msg.User, game), raw)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}
+
+			entry := new(pb.GameEntry)
+			rawEntry, err := item.Value()
+			if err != nil {
+				return err
+			}
+			err = proto.Unmarshal(rawEntry, entry)
 			if err != nil {
 				return err
 			}
 
-			game := string(rawCurrent)
-			if game != "" {
-				item, err := tx.Get(UserEntryKey(msg.User, game))
-				if err != nil {
-					if err != badger.ErrKeyNotFound {
-						return err
-					}
+			entry.Dur += int32(timeNow.Sub(lastChanged).Seconds())
 
-					raw, err := proto.Marshal(&pb.GameEntry{
-						Name: game,
-						Dur:  int32(timeNow.Sub(lastChanged).Seconds()),
-					})
-					if err != nil {
-						return err
-					}
-
-					err = tx.Set(UserEntryKey(msg.User, game), raw)
-					if err != nil {
-						return err
-					}
-
-					return nil
-				}
-
-				entry := new(pb.GameEntry)
-				rawEntry, err := item.Value()
-				if err != nil {
-					return err
-				}
-				err = proto.Unmarshal(rawEntry, entry)
-				if err != nil {
-					return err
-				}
-
-				entry.Dur += int32(timeNow.Sub(lastChanged).Seconds())
-
-				rawEntry, err = proto.Marshal(entry)
-				if err != nil {
-					return err
-				}
-
-				err = tx.Set(UserEntryKey(msg.User, game), rawEntry)
-				if err != nil {
-					return err
-				}
+			rawEntry, err = proto.Marshal(entry)
+			if err != nil {
+				return err
 			}
 
-			return nil
-		})
-		if err != nil {
-			fmt.Println(err)
-			return grpc.Errorf(codes.Internal, err.Error())
+			err = tx.Set(UserEntryKey(msg.User, game), rawEntry)
+			if err != nil {
+				return err
+			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+		return grpc.Errorf(codes.Internal, err.Error())
 	}
 
+	return nil
+}
+
+func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.SendPlayedResponse{})
+		}
+
+		go func() {
+			err := s.processPlayed(msg)
+			if err != nil {
+				fmt.Println(err)
+				// return err
+			}
+		}()
+
+	}
 	return nil
 }
 
