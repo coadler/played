@@ -20,6 +20,12 @@
   version = "v0.18.0"
 
 [[projects]]
+  name = "github.com/codercom/retry"
+  packages = ["."]
+  revision = "630c5754898a8daf6b79b1de0adc563eb519c32d"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/dgraph-io/badger"
   packages = [".","options","protos","skl","table","y"]
   revision = "a6f0866f06a0ef6ac612e427ffe5d081db4e6fab"
@@ -62,6 +68,24 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "go.uber.org/atomic"
+  packages = ["."]
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
+
+[[projects]]
+  name = "go.uber.org/multierr"
+  packages = ["."]
+  revision = "3c4937480c32f4c13a875a1829af76c98ca3d40a"
+  version = "v1.1.0"
+
+[[projects]]
+  name = "go.uber.org/zap"
+  packages = [".","buffer","internal/bufferpool","internal/color","internal/exit","zapcore"]
+  revision = "4d45f9617f7d90f7a663ff21c7a4321dbe78098b"
+  version = "v1.9.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["internal/subtle","nacl/secretbox","poly1305","salsa20/salsa"]
@@ -100,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3b5ef5bc5132a067e2e2fedafbbe9df7953ae56deef7e9cfdae336c09839579f"
+  inputs-digest = "0c06ed6ec1ef404731111fdff7ba7650decae46df0231fa3335c0d6ded0b28ac"
   solver-name = "gps-cdcl"
   solver-version = 1
