@@ -17,6 +17,7 @@ func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb
 	})
 
 	if err != nil {
+		s.log.Error("failed to add user to whitelist", zap.Error(err))
 		return &pb.AddUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
@@ -29,6 +30,7 @@ func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
 	if err != nil {
+		s.log.Error("failed to delete whitelist", zap.Error(err))
 		return &pb.RemoveUserResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
@@ -43,6 +45,7 @@ func (s *PlayedServer) CheckWhitelist(ctx context.Context, req *pb.CheckWhitelis
 		return nil
 	})
 	if err != nil {
+		s.log.Error("failed to read whitelist", zap.Error(err))
 		return &pb.CheckWhiteListResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 

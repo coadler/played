@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	_ "expvar"
 	"fmt"
 	"io"
@@ -91,6 +92,9 @@ func (s *PlayedServer) processPlayed(msg *pb.SendPlayedRequest) error {
 	// also helps lock contentions
 	err = s.Bolt.View(func(tx *bolt.Tx) error {
 		// user isnt whitelisted, get out
+		if msg.User == "" {
+			return errors.New("received empty user in msg")
+		}
 		end = tx.Bucket(s.WhitelistBucket).Get([]byte(msg.User)) == nil
 		return nil
 	})
@@ -262,17 +266,20 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		go func() {
-			defer func() {
-				z := recover()
-				if z != nil {
-					fmt.Println(z)
-				}
-			}()
+			// defer func() {
+			// 	z := recover()
+			// 	if z != nil {
+			// 		fmt.Println(z)
+			// 	}
+			// }()
 
 			err := retry.
 				New(5 * time.Millisecond).
 				Timeout(2 * time.Second).
 				Backoff(200 * time.Millisecond).
+				Condition(func(err error) bool {
+					return err == badger.ErrConflict
+				}).
 				Run(func() error {
 					return s.processPlayed(msg)
 				})
@@ -282,7 +289,6 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}()
 
 	}
-	return nil
 }
 
 func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
