@@ -14,6 +14,7 @@ import (
 
 	"github.com/codercom/retry"
 	"github.com/dustin/go-humanize"
+	"go.uber.org/zap"
 
 	"github.com/ThyLeader/played/pb"
 	"github.com/boltdb/bolt"
@@ -23,6 +24,8 @@ import (
 )
 
 type PlayedServer struct {
+	log *zap.Logger
+
 	DB   *badger.DB
 	Bolt *bolt.DB
 
@@ -41,9 +44,14 @@ func Start() {
 	}
 	defer db.Close()
 
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 	bdb, err := bolt.Open("bolt/whitelist.db", 0600, nil)
 	if err != nil {
-		log.Println(err)
+		logger.Error("failed to open bolt/whitelist.db", zap.Error(err))
 		return
 	}
 	defer db.Close()
@@ -54,22 +62,22 @@ func Start() {
 		return err
 	})
 	if err != nil {
-		log.Printf("failed to create bolt bucket: %v", err)
+		logger.Error("failed to create bolt bucket", zap.Error(err))
 		return
 	}
 
 	lis, err := net.Listen("tcp", "localhost:8089")
 	if err != nil {
-		log.Printf("failed to listen: %v", err)
+		logger.Error("failed to listen", zap.Error(err))
 		return
 	}
 
 	// go http.ListenAndServe(":8089", nil)
 
 	srv := grpc.NewServer()
-	played := &PlayedServer{db, bdb, key}
+	played := &PlayedServer{logger, db, bdb, key}
 	pb.RegisterPlayedServer(srv, played)
-	fmt.Println("Listening on port :8089")
+	logger.Info("Listening on port :8089")
 	srv.Serve(lis)
 }
 
@@ -262,7 +270,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return s.processPlayed(msg)
 				})
 			if err != nil {
-				fmt.Println(err)
+				s.log.Error("processPlayed returned an error", zap.Error(err))
 			}
 		}()
 
@@ -328,7 +336,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 			return resp, nil
 		}
 
-		fmt.Println(err)
+		s.log.Error("failed to get played data", zap.Error(err))
 		return &pb.GetPlayedResponse{}, grpc.Errorf(codes.Internal, err.Error())
 	}
 
