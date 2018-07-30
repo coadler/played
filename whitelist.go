@@ -2,16 +2,16 @@ package played
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ThyLeader/played/pb"
 	"github.com/boltdb/bolt"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
 func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {
-	fmt.Printf("got whitelist: %+v\n", req)
+	s.log.Info("got whitelist", zap.String("user", req.User))
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Put([]byte(req.User), []byte(""))
 	})
@@ -24,7 +24,7 @@ func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb
 }
 
 func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest) (*pb.RemoveUserResponse, error) {
-	fmt.Printf("got remove: %+v\n", req)
+	s.log.Info("got remove", zap.String("user", req.User))
 	err := s.Bolt.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(s.WhitelistBucket).Delete([]byte(req.User))
 	})
@@ -36,7 +36,7 @@ func (s *PlayedServer) RemoveUser(ctx context.Context, req *pb.RemoveUserRequest
 }
 
 func (s *PlayedServer) CheckWhitelist(ctx context.Context, req *pb.CheckWhitelistRequest) (*pb.CheckWhiteListResponse, error) {
-	fmt.Printf("got whitelist check: %+v\n", req)
+	s.log.Info("got whitelist check", zap.String("user", req.User))
 	whitelisted := false
 	err := s.Bolt.View(func(tx *bolt.Tx) error {
 		whitelisted = tx.Bucket(s.WhitelistBucket).Get([]byte(req.User)) != nil
