@@ -264,7 +264,9 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		go func() {
 			defer func() {
 				z := recover()
-				fmt.Println(z)
+				if z != nil {
+					fmt.Println(z)
+				}
 			}()
 
 			err := retry.
