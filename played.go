@@ -262,6 +262,11 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 		}
 
 		go func() {
+			defer func() {
+				z := recover()
+				fmt.Println(z)
+			}()
+
 			err := retry.
 				New(5 * time.Millisecond).
 				Timeout(2 * time.Second).
