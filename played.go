@@ -22,6 +22,7 @@ import (
 	"github.com/dgraph-io/badger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type PlayedServer struct {
@@ -267,27 +268,27 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 			return stream.SendAndClose(&pb.SendPlayedResponse{})
 		}
 
-		// if msg == nil {
-		// 	s.log.Error("msg is nil (!)")
-		// 	return status.Errorf(codes.Internal, "msg became nil")
-		// }
-
-		// user, game := msg.User, msg.Game
-		// go func() {
-		err = retry.
-			New(5 * time.Millisecond).
-			Timeout(2 * time.Second).
-			Backoff(200 * time.Millisecond).
-			Condition(func(err error) bool {
-				return err == badger.ErrConflict
-			}).
-			Run(func() error {
-				return s.processPlayed(msg.User, msg.Game)
-			})
-		if err != nil {
-			s.log.Error("failed to process played message", zap.Error(err))
+		if msg == nil {
+			s.log.Error("msg is nil (!)")
+			return status.Errorf(codes.Internal, "msg became nil")
 		}
-		// }()
+
+		user, game := msg.User, msg.Game
+		go func() {
+			err = retry.
+				New(5 * time.Millisecond).
+				Timeout(2 * time.Second).
+				Backoff(200 * time.Millisecond).
+				Condition(func(err error) bool {
+					return err == badger.ErrConflict
+				}).
+				Run(func() error {
+					return s.processPlayed(user, game)
+				})
+			if err != nil {
+				s.log.Error("failed to process played message", zap.Error(err))
+			}
+		}()
 
 	}
 }
