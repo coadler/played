@@ -84,8 +84,8 @@ func Start() {
 }
 
 func (s *PlayedServer) processPlayed(user, game string) error {
-	if user == "" || game == "" {
-		s.log.Error("processPlayed called with empty user or game", zap.String("user", user), zap.String("game", game))
+	if user == "" {
+		s.log.Error("processPlayed called with empty user", zap.String("user", user))
 		return errors.New("can't process empty user or game")
 	}
 
