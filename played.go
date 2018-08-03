@@ -119,11 +119,14 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 				return nil
 			}
 
+			s.log.Info("some badger err 1", zap.Error(err))
+
 			return err
 		}
 
 		v, err := current.Value()
 		if err != nil {
+			s.log.Info("some badger err 2", zap.Error(err))
 			return err
 		}
 
