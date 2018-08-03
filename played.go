@@ -188,7 +188,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 				return err
 			}
 
-			err = tx.Set(UserCurrentKey(user), []byte(user))
+			err = tx.Set(UserCurrentKey(user), []byte(game))
 			if err != nil {
 				return err
 			}
@@ -210,7 +210,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 			return err
 		}
 
-		err = tx.Set(UserCurrentKey(user), []byte(user))
+		err = tx.Set(UserCurrentKey(user), []byte(game))
 		if err != nil {
 			return err
 		}
