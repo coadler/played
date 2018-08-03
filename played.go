@@ -115,12 +115,10 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		current, err := tx.Get(UserCurrentKey(user))
 		if err != nil {
 			if err == badger.ErrKeyNotFound {
-				s.log.Info("current game not found", zap.String("game", game))
 				return nil
 			}
 
 			s.log.Info("some badger err 1", zap.Error(err))
-
 			return err
 		}
 
@@ -142,7 +140,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	}
 
 	if end {
-		s.log.Info("end", zap.Bool("end", end))
 		return nil
 	}
 
