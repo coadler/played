@@ -139,6 +139,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	}
 
 	if end {
+		s.log.Info("end", zap.Bool("end", end))
 		return nil
 	}
 
