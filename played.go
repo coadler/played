@@ -293,11 +293,7 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err == badger.ErrConflict
 				}).
 				Run(func() error {
-					err := s.processPlayed(user, game)
-					if err != nil {
-						s.log.Error("failed to process played message", zap.Error(err))
-					}
-					return err
+					return s.processPlayed(user, game)
 				})
 			if err != nil {
 				s.log.Error("failed to process played message", zap.Error(err))
