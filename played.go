@@ -89,8 +89,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return errors.New("can't process empty user or game")
 	}
 
-	s.log.Info("zzz", zap.String("user", user), zap.String("game", game))
-
 	var (
 		err error
 		end bool
@@ -137,6 +135,8 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	if end {
 		return nil
 	}
+
+	s.log.Info("past whitelist", zap.String("user", user), zap.String("game", game))
 
 	err = s.DB.Update(func(tx *badger.Txn) error {
 		var (
