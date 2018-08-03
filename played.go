@@ -109,7 +109,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return nil
 	}
 
-	s.log.Info("past whitelist", zap.String("user", user), zap.String("game", game))
+	// s.log.Info("past whitelist", zap.String("user", user), zap.String("game", game))
 
 	err = s.DB.View(func(tx *badger.Txn) error {
 		current, err := tx.Get(UserCurrentKey(user))
@@ -138,7 +138,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return nil
 	}
 
-	// s.log.Info("past same game", zap.String("user", user), zap.String("game", game))
+	s.log.Info("past same game", zap.String("user", user), zap.String("game", game))
 
 	err = s.DB.Update(func(tx *badger.Txn) error {
 		var (
@@ -287,7 +287,11 @@ func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 					return err == badger.ErrConflict
 				}).
 				Run(func() error {
-					return s.processPlayed(user, game)
+					err := s.processPlayed(user, game)
+					if err != nil {
+						s.log.Error("failed to process played message", zap.Error(err))
+					}
+					return err
 				})
 			if err != nil {
 				s.log.Error("failed to process played message", zap.Error(err))
