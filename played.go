@@ -109,6 +109,8 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return nil
 	}
 
+	s.log.Info("past whitelist", zap.String("user", user), zap.String("game", game))
+
 	err = s.DB.View(func(tx *badger.Txn) error {
 		current, err := tx.Get(UserCurrentKey(user))
 		if err != nil {
@@ -136,7 +138,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return nil
 	}
 
-	s.log.Info("past whitelist", zap.String("user", user), zap.String("game", game))
+	// s.log.Info("past same game", zap.String("user", user), zap.String("game", game))
 
 	err = s.DB.Update(func(tx *badger.Txn) error {
 		var (
