@@ -271,7 +271,12 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
 	for {
 		msg, err := stream.Recv()
-		if err == io.EOF {
+		if err != nil {
+			if err == io.EOF {
+				return stream.SendAndClose(&pb.SendPlayedResponse{})
+			}
+
+			s.log.Error("error receiving", zap.Error(err))
 			return stream.SendAndClose(&pb.SendPlayedResponse{})
 		}
 
