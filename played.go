@@ -89,6 +89,8 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return errors.New("can't process empty user or game")
 	}
 
+	s.log.Info("zzz", zap.String("user", user), zap.String("game", game))
+
 	var (
 		err error
 		end bool
