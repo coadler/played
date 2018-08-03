@@ -134,7 +134,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		// end early if we're getting an update for the current game.
 		// we also do this within a read transaction so we don't
 		// lock up the db
-		end = bytes.Equal(v, []byte(user))
+		end = bytes.Equal(v, []byte(game))
 		return nil
 	})
 	if err != nil {
@@ -145,8 +145,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		s.log.Info("end", zap.Bool("end", end))
 		return nil
 	}
-
-	s.log.Info("past same game", zap.String("user", user), zap.String("game", game))
 
 	err = s.DB.Update(func(tx *badger.Txn) error {
 		var (
