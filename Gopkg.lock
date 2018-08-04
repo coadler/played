@@ -14,10 +14,10 @@
   version = "v1.3.1"
 
 [[projects]]
+  branch = "develop"
   name = "github.com/bwmarrin/discordgo"
   packages = ["."]
-  revision = "4a33b9bc7c56cfdb9bb244e33e83cb3941fe2bdc"
-  version = "v0.18.0"
+  revision = "1593c55523958ab2f7c0473931915efa638718a0"
 
 [[projects]]
   name = "github.com/codercom/retry"
@@ -124,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0c06ed6ec1ef404731111fdff7ba7650decae46df0231fa3335c0d6ded0b28ac"
+  inputs-digest = "2026aa1d4748d6f43d09452bc9ebbca71b9ca9b351701ebfa6427b0ff14f4e1d"
   solver-name = "gps-cdcl"
   solver-version = 1
