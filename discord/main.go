@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/ThyLeader/played/pb"
+	"github.com/coadler/played/pb"
 	"github.com/bwmarrin/discordgo"
 	"google.golang.org/grpc"
 )

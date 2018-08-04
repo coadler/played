@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ThyLeader/played/pb"
+	"github.com/coadler/played/pb"
 	"google.golang.org/grpc"
 )
 

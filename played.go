@@ -17,7 +17,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"go.uber.org/zap"
 
-	"github.com/ThyLeader/played/pb"
+	"github.com/coadler/played/pb"
 	"github.com/boltdb/bolt"
 	"github.com/dgraph-io/badger"
 	"google.golang.org/grpc"

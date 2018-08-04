@@ -3,7 +3,7 @@ package played
 import (
 	"context"
 
-	"github.com/ThyLeader/played/pb"
+	"github.com/coadler/played/pb"
 	"github.com/boltdb/bolt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

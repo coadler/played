@@ -1,6 +1,6 @@
 package main
 
-import "github.com/ThyLeader/played"
+import "github.com/coadler/played"
 
 func main() {
 	played.Start()
