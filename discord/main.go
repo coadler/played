@@ -20,7 +20,7 @@ func main() {
 		return
 	}
 
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:8089", grpc.WithInsecure())
 	if err != nil {
 		panic(err.Error())
 	}

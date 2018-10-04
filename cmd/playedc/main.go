@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:8089", grpc.WithInsecure())
 	if err != nil {
 		panic(err.Error())
 	}
@@ -28,15 +28,30 @@ func main() {
 		// 		User: "105484726235607040",
 		// 		Game: fmt.Sprintf("%d", game),
 		// 	})
-
+                //
 		// 	game++
 		// 	time.Sleep(5 * time.Second)
 		// }
 
-		res, _ := c.GetPlayed(ctx, &pb.GetPlayedRequest{User: "454072114492866560"})
+		res, err := c.GetPlayed(ctx, &pb.GetPlayedRequest{User: "105484726235607040"})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("first:", res.First)
+		fmt.Println("last:", res.Last)
 		for _, e := range res.Games {
 			fmt.Printf("%+v\n", *e)
 		}
+
+		// res, err := c.CheckWhitelist(ctx, &pb.CheckWhitelistRequest{User: "105484726235607040"})
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
+                //
+		// fmt.Println(res.Whitelisted)
 	}()
 
 	end := make(chan struct{})

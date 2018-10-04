@@ -3,3 +3,5 @@ token.go
 *.sst
 LOCK
 MANIFEST
+
+foundationdb/
