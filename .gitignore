@@ -3,5 +3,6 @@ token.go
 *.sst
 LOCK
 MANIFEST
+whitelist.db
 
 foundationdb/
