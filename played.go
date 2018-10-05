@@ -283,6 +283,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 }
 
 func (s *PlayedServer) CheckHealth(c context.Context, req *pb.CheckHealthRequest) (*pb.CheckHealthResponse, error) {
+	s.log.Debug("got health check")
 	return &pb.CheckHealthResponse{}, nil
 }
 
