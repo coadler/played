@@ -82,7 +82,7 @@ func Start() {
 		},
 	)
 
-	lis, err := net.Listen("tcp", "localhost:8089")
+	lis, err := net.Listen("tcp", "0.0.0.0:8089")
 	if err != nil {
 		logger.Error("failed to listen", zap.Error(err))
 		return
