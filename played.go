@@ -282,6 +282,10 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	return resp, nil
 }
 
+func (s *PlayedServer) CheckHealth(c context.Context, req *pb.CheckHealthRequest) (*pb.CheckHealthResponse, error) {
+	return &pb.CheckHealthResponse{}, nil
+}
+
 type Games []*pb.GameEntry
 
 func (g Games) Len() int {

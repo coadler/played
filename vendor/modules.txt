@@ -31,9 +31,10 @@ github.com/go-redis/redis/internal/singleflight
 github.com/go-redis/redis/internal/util
 # github.com/gogo/protobuf v1.1.1
 github.com/gogo/protobuf/proto
-# github.com/golang/protobuf v1.1.0
+# github.com/golang/protobuf v1.2.0
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
@@ -57,7 +58,7 @@ golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/salsa20/salsa
-# golang.org/x/net v0.0.0-20180706051357-32a936f46389
+# golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
 golang.org/x/net/context
 golang.org/x/net/trace
 golang.org/x/net/http2
@@ -65,7 +66,7 @@ golang.org/x/net/internal/timeseries
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20180704094941-151529c776cd
+# golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.0
 golang.org/x/text/secure/bidirule
@@ -73,6 +74,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/transform
 # google.golang.org/genproto v0.0.0-20180627194029-ff3583edef7d
+google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.13.0
 google.golang.org/grpc
