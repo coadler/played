@@ -6,9 +6,12 @@ package pb
 import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import _ "google.golang.org/genproto/googleapis/api/annotations"
 
-import context "golang.org/x/net/context"
-import grpc "google.golang.org/grpc"
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
 
 import io "io"
 
@@ -24,17 +27,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type SendPlayedRequest struct {
-	User                 string   `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	Game                 string   `protobuf:"bytes,2,opt,name=game,proto3" json:"game,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Game string `protobuf:"bytes,2,opt,name=game,proto3" json:"game,omitempty"`
 }
 
 func (m *SendPlayedRequest) Reset()         { *m = SendPlayedRequest{} }
 func (m *SendPlayedRequest) String() string { return proto.CompactTextString(m) }
 func (*SendPlayedRequest) ProtoMessage()    {}
 func (*SendPlayedRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{0}
+	return fileDescriptor_played_fa05d7c39551f844, []int{0}
 }
 func (m *SendPlayedRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -78,17 +79,15 @@ func (m *SendPlayedRequest) GetGame() string {
 }
 
 type GameEntry struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Dur                  int32    `protobuf:"varint,2,opt,name=dur,proto3" json:"dur,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Dur  int32  `protobuf:"varint,2,opt,name=dur,proto3" json:"dur,omitempty"`
 }
 
 func (m *GameEntry) Reset()         { *m = GameEntry{} }
 func (m *GameEntry) String() string { return proto.CompactTextString(m) }
 func (*GameEntry) ProtoMessage()    {}
 func (*GameEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{1}
+	return fileDescriptor_played_fa05d7c39551f844, []int{1}
 }
 func (m *GameEntry) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -132,17 +131,15 @@ func (m *GameEntry) GetDur() int32 {
 }
 
 type GameEntryPublic struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Dur                  string   `protobuf:"bytes,2,opt,name=dur,proto3" json:"dur,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Dur  string `protobuf:"bytes,2,opt,name=dur,proto3" json:"dur,omitempty"`
 }
 
 func (m *GameEntryPublic) Reset()         { *m = GameEntryPublic{} }
 func (m *GameEntryPublic) String() string { return proto.CompactTextString(m) }
 func (*GameEntryPublic) ProtoMessage()    {}
 func (*GameEntryPublic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{2}
+	return fileDescriptor_played_fa05d7c39551f844, []int{2}
 }
 func (m *GameEntryPublic) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -186,15 +183,13 @@ func (m *GameEntryPublic) GetDur() string {
 }
 
 type SendPlayedResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *SendPlayedResponse) Reset()         { *m = SendPlayedResponse{} }
 func (m *SendPlayedResponse) String() string { return proto.CompactTextString(m) }
 func (*SendPlayedResponse) ProtoMessage()    {}
 func (*SendPlayedResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{3}
+	return fileDescriptor_played_fa05d7c39551f844, []int{3}
 }
 func (m *SendPlayedResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -224,16 +219,14 @@ func (m *SendPlayedResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_SendPlayedResponse proto.InternalMessageInfo
 
 type GetPlayedRequest struct {
-	User                 string   `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 }
 
 func (m *GetPlayedRequest) Reset()         { *m = GetPlayedRequest{} }
 func (m *GetPlayedRequest) String() string { return proto.CompactTextString(m) }
 func (*GetPlayedRequest) ProtoMessage()    {}
 func (*GetPlayedRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{4}
+	return fileDescriptor_played_fa05d7c39551f844, []int{4}
 }
 func (m *GetPlayedRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -270,18 +263,16 @@ func (m *GetPlayedRequest) GetUser() string {
 }
 
 type GetPlayedResponse struct {
-	Games                []*GameEntryPublic `protobuf:"bytes,1,rep,name=games" json:"games,omitempty"`
-	First                string             `protobuf:"bytes,2,opt,name=first,proto3" json:"first,omitempty"`
-	Last                 string             `protobuf:"bytes,3,opt,name=last,proto3" json:"last,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	Games []*GameEntryPublic `protobuf:"bytes,1,rep,name=games" json:"games,omitempty"`
+	First string             `protobuf:"bytes,2,opt,name=first,proto3" json:"first,omitempty"`
+	Last  string             `protobuf:"bytes,3,opt,name=last,proto3" json:"last,omitempty"`
 }
 
 func (m *GetPlayedResponse) Reset()         { *m = GetPlayedResponse{} }
 func (m *GetPlayedResponse) String() string { return proto.CompactTextString(m) }
 func (*GetPlayedResponse) ProtoMessage()    {}
 func (*GetPlayedResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{5}
+	return fileDescriptor_played_fa05d7c39551f844, []int{5}
 }
 func (m *GetPlayedResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -332,16 +323,14 @@ func (m *GetPlayedResponse) GetLast() string {
 }
 
 type AddUserRequest struct {
-	User                 string   `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 }
 
 func (m *AddUserRequest) Reset()         { *m = AddUserRequest{} }
 func (m *AddUserRequest) String() string { return proto.CompactTextString(m) }
 func (*AddUserRequest) ProtoMessage()    {}
 func (*AddUserRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{6}
+	return fileDescriptor_played_fa05d7c39551f844, []int{6}
 }
 func (m *AddUserRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -378,15 +367,13 @@ func (m *AddUserRequest) GetUser() string {
 }
 
 type AddUserResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *AddUserResponse) Reset()         { *m = AddUserResponse{} }
 func (m *AddUserResponse) String() string { return proto.CompactTextString(m) }
 func (*AddUserResponse) ProtoMessage()    {}
 func (*AddUserResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{7}
+	return fileDescriptor_played_fa05d7c39551f844, []int{7}
 }
 func (m *AddUserResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -416,16 +403,14 @@ func (m *AddUserResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_AddUserResponse proto.InternalMessageInfo
 
 type RemoveUserRequest struct {
-	User                 string   `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 }
 
 func (m *RemoveUserRequest) Reset()         { *m = RemoveUserRequest{} }
 func (m *RemoveUserRequest) String() string { return proto.CompactTextString(m) }
 func (*RemoveUserRequest) ProtoMessage()    {}
 func (*RemoveUserRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{8}
+	return fileDescriptor_played_fa05d7c39551f844, []int{8}
 }
 func (m *RemoveUserRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -462,15 +447,13 @@ func (m *RemoveUserRequest) GetUser() string {
 }
 
 type RemoveUserResponse struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *RemoveUserResponse) Reset()         { *m = RemoveUserResponse{} }
 func (m *RemoveUserResponse) String() string { return proto.CompactTextString(m) }
 func (*RemoveUserResponse) ProtoMessage()    {}
 func (*RemoveUserResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{9}
+	return fileDescriptor_played_fa05d7c39551f844, []int{9}
 }
 func (m *RemoveUserResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -500,16 +483,14 @@ func (m *RemoveUserResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_RemoveUserResponse proto.InternalMessageInfo
 
 type CheckWhitelistRequest struct {
-	User                 string   `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	User string `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 }
 
 func (m *CheckWhitelistRequest) Reset()         { *m = CheckWhitelistRequest{} }
 func (m *CheckWhitelistRequest) String() string { return proto.CompactTextString(m) }
 func (*CheckWhitelistRequest) ProtoMessage()    {}
 func (*CheckWhitelistRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{10}
+	return fileDescriptor_played_fa05d7c39551f844, []int{10}
 }
 func (m *CheckWhitelistRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -546,16 +527,14 @@ func (m *CheckWhitelistRequest) GetUser() string {
 }
 
 type CheckWhiteListResponse struct {
-	Whitelisted          bool     `protobuf:"varint,1,opt,name=whitelisted,proto3" json:"whitelisted,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Whitelisted bool `protobuf:"varint,1,opt,name=whitelisted,proto3" json:"whitelisted,omitempty"`
 }
 
 func (m *CheckWhiteListResponse) Reset()         { *m = CheckWhiteListResponse{} }
 func (m *CheckWhiteListResponse) String() string { return proto.CompactTextString(m) }
 func (*CheckWhiteListResponse) ProtoMessage()    {}
 func (*CheckWhiteListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_played_1611aaeebfa1a5bc, []int{11}
+	return fileDescriptor_played_fa05d7c39551f844, []int{11}
 }
 func (m *CheckWhiteListResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -591,6 +570,78 @@ func (m *CheckWhiteListResponse) GetWhitelisted() bool {
 	return false
 }
 
+type CheckHealthRequest struct {
+}
+
+func (m *CheckHealthRequest) Reset()         { *m = CheckHealthRequest{} }
+func (m *CheckHealthRequest) String() string { return proto.CompactTextString(m) }
+func (*CheckHealthRequest) ProtoMessage()    {}
+func (*CheckHealthRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_played_fa05d7c39551f844, []int{12}
+}
+func (m *CheckHealthRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *CheckHealthRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_CheckHealthRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *CheckHealthRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckHealthRequest.Merge(dst, src)
+}
+func (m *CheckHealthRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *CheckHealthRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckHealthRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckHealthRequest proto.InternalMessageInfo
+
+type CheckHealthResponse struct {
+}
+
+func (m *CheckHealthResponse) Reset()         { *m = CheckHealthResponse{} }
+func (m *CheckHealthResponse) String() string { return proto.CompactTextString(m) }
+func (*CheckHealthResponse) ProtoMessage()    {}
+func (*CheckHealthResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_played_fa05d7c39551f844, []int{13}
+}
+func (m *CheckHealthResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *CheckHealthResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_CheckHealthResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *CheckHealthResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CheckHealthResponse.Merge(dst, src)
+}
+func (m *CheckHealthResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *CheckHealthResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CheckHealthResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CheckHealthResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*SendPlayedRequest)(nil), "played.SendPlayedRequest")
 	proto.RegisterType((*GameEntry)(nil), "played.GameEntry")
@@ -604,6 +655,8 @@ func init() {
 	proto.RegisterType((*RemoveUserResponse)(nil), "played.RemoveUserResponse")
 	proto.RegisterType((*CheckWhitelistRequest)(nil), "played.CheckWhitelistRequest")
 	proto.RegisterType((*CheckWhiteListResponse)(nil), "played.CheckWhiteListResponse")
+	proto.RegisterType((*CheckHealthRequest)(nil), "played.CheckHealthRequest")
+	proto.RegisterType((*CheckHealthResponse)(nil), "played.CheckHealthResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -614,14 +667,16 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Played service
-
+// PlayedClient is the client API for Played service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type PlayedClient interface {
 	SendPlayed(ctx context.Context, opts ...grpc.CallOption) (Played_SendPlayedClient, error)
 	GetPlayed(ctx context.Context, in *GetPlayedRequest, opts ...grpc.CallOption) (*GetPlayedResponse, error)
 	AddUser(ctx context.Context, in *AddUserRequest, opts ...grpc.CallOption) (*AddUserResponse, error)
 	RemoveUser(ctx context.Context, in *RemoveUserRequest, opts ...grpc.CallOption) (*RemoveUserResponse, error)
 	CheckWhitelist(ctx context.Context, in *CheckWhitelistRequest, opts ...grpc.CallOption) (*CheckWhiteListResponse, error)
+	CheckHealth(ctx context.Context, in *CheckHealthRequest, opts ...grpc.CallOption) (*CheckHealthResponse, error)
 }
 
 type playedClient struct {
@@ -702,14 +757,23 @@ func (c *playedClient) CheckWhitelist(ctx context.Context, in *CheckWhitelistReq
 	return out, nil
 }
 
-// Server API for Played service
+func (c *playedClient) CheckHealth(ctx context.Context, in *CheckHealthRequest, opts ...grpc.CallOption) (*CheckHealthResponse, error) {
+	out := new(CheckHealthResponse)
+	err := c.cc.Invoke(ctx, "/played.Played/CheckHealth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
+// PlayedServer is the server API for Played service.
 type PlayedServer interface {
 	SendPlayed(Played_SendPlayedServer) error
 	GetPlayed(context.Context, *GetPlayedRequest) (*GetPlayedResponse, error)
 	AddUser(context.Context, *AddUserRequest) (*AddUserResponse, error)
 	RemoveUser(context.Context, *RemoveUserRequest) (*RemoveUserResponse, error)
 	CheckWhitelist(context.Context, *CheckWhitelistRequest) (*CheckWhiteListResponse, error)
+	CheckHealth(context.Context, *CheckHealthRequest) (*CheckHealthResponse, error)
 }
 
 func RegisterPlayedServer(s *grpc.Server, srv PlayedServer) {
@@ -814,6 +878,24 @@ func _Played_CheckWhitelist_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Played_CheckHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckHealthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlayedServer).CheckHealth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/played.Played/CheckHealth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlayedServer).CheckHealth(ctx, req.(*CheckHealthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Played_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "played.Played",
 	HandlerType: (*PlayedServer)(nil),
@@ -833,6 +915,10 @@ var _Played_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckWhitelist",
 			Handler:    _Played_CheckWhitelist_Handler,
+		},
+		{
+			MethodName: "CheckHealth",
+			Handler:    _Played_CheckHealth_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -1154,6 +1240,42 @@ func (m *CheckWhiteListResponse) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *CheckHealthRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CheckHealthRequest) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	return i, nil
+}
+
+func (m *CheckHealthResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CheckHealthResponse) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	return i, nil
+}
+
 func encodeVarintPlayed(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
@@ -1164,6 +1286,9 @@ func encodeVarintPlayed(dAtA []byte, offset int, v uint64) int {
 	return offset + 1
 }
 func (m *SendPlayedRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.User)
@@ -1178,6 +1303,9 @@ func (m *SendPlayedRequest) Size() (n int) {
 }
 
 func (m *GameEntry) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.Name)
@@ -1191,6 +1319,9 @@ func (m *GameEntry) Size() (n int) {
 }
 
 func (m *GameEntryPublic) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.Name)
@@ -1205,12 +1336,18 @@ func (m *GameEntryPublic) Size() (n int) {
 }
 
 func (m *SendPlayedResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	return n
 }
 
 func (m *GetPlayedRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.User)
@@ -1221,6 +1358,9 @@ func (m *GetPlayedRequest) Size() (n int) {
 }
 
 func (m *GetPlayedResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	if len(m.Games) > 0 {
@@ -1241,6 +1381,9 @@ func (m *GetPlayedResponse) Size() (n int) {
 }
 
 func (m *AddUserRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.User)
@@ -1251,12 +1394,18 @@ func (m *AddUserRequest) Size() (n int) {
 }
 
 func (m *AddUserResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	return n
 }
 
 func (m *RemoveUserRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.User)
@@ -1267,12 +1416,18 @@ func (m *RemoveUserRequest) Size() (n int) {
 }
 
 func (m *RemoveUserResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	return n
 }
 
 func (m *CheckWhitelistRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	l = len(m.User)
@@ -1283,11 +1438,32 @@ func (m *CheckWhitelistRequest) Size() (n int) {
 }
 
 func (m *CheckWhiteListResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
 	var l int
 	_ = l
 	if m.Whitelisted {
 		n += 2
 	}
+	return n
+}
+
+func (m *CheckHealthRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *CheckHealthResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	return n
 }
 
@@ -2293,6 +2469,106 @@ func (m *CheckWhiteListResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *CheckHealthRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPlayed
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: CheckHealthRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: CheckHealthRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPlayed(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthPlayed
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *CheckHealthResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPlayed
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: CheckHealthResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: CheckHealthResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPlayed(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthPlayed
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func skipPlayed(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2398,35 +2674,40 @@ var (
 	ErrIntOverflowPlayed   = fmt.Errorf("proto: integer overflow")
 )
 
-func init() { proto.RegisterFile("played.proto", fileDescriptor_played_1611aaeebfa1a5bc) }
+func init() { proto.RegisterFile("played.proto", fileDescriptor_played_fa05d7c39551f844) }
 
-var fileDescriptor_played_1611aaeebfa1a5bc = []byte{
-	// 424 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x53, 0x4d, 0xab, 0xd3, 0x40,
-	0x14, 0x4d, 0x5a, 0x5b, 0xcd, 0x7d, 0xf2, 0xde, 0xcb, 0x25, 0xbe, 0xa6, 0x01, 0x43, 0x09, 0xa2,
-	0x05, 0xb1, 0x60, 0x5d, 0x08, 0xea, 0xc6, 0x4a, 0xe9, 0xc6, 0x45, 0x8d, 0x88, 0xe0, 0x2e, 0x6d,
-	0x46, 0x1b, 0x4c, 0x93, 0x98, 0x99, 0x28, 0xfd, 0x17, 0xfe, 0x2c, 0x97, 0xfe, 0x04, 0xa9, 0x6b,
-	0xff, 0x83, 0x4c, 0x66, 0xf2, 0xd1, 0x26, 0xb4, 0xbb, 0x3b, 0x77, 0xce, 0xb9, 0x73, 0xee, 0x39,
-	0x09, 0xdc, 0x4d, 0x42, 0x6f, 0x47, 0xfc, 0x49, 0x92, 0xc6, 0x2c, 0xc6, 0xbe, 0x38, 0x39, 0x2f,
-	0x41, 0x7f, 0x4f, 0x22, 0x7f, 0x99, 0x9f, 0x5c, 0xf2, 0x2d, 0x23, 0x94, 0x21, 0xc2, 0xad, 0x8c,
-	0x92, 0xd4, 0x54, 0x47, 0xea, 0x58, 0x73, 0xf3, 0x9a, 0xf7, 0xbe, 0x78, 0x5b, 0x62, 0x76, 0x44,
-	0x8f, 0xd7, 0xce, 0x53, 0xd0, 0x16, 0xde, 0x96, 0xcc, 0x23, 0x96, 0xee, 0x38, 0x20, 0xe2, 0x00,
-	0x49, 0xe2, 0x35, 0x5e, 0x43, 0xd7, 0xcf, 0xd2, 0x9c, 0xd3, 0x73, 0x79, 0xe9, 0x3c, 0x87, 0xab,
-	0x92, 0xb2, 0xcc, 0x56, 0x61, 0xb0, 0x3e, 0x47, 0xd4, 0x04, 0xd1, 0x00, 0xac, 0x0b, 0xa5, 0x49,
-	0x1c, 0x51, 0xe2, 0x3c, 0x84, 0xeb, 0x05, 0x61, 0x67, 0xd5, 0x3b, 0x21, 0xe8, 0x35, 0x9c, 0x20,
-	0xe3, 0x13, 0xe8, 0xf1, 0x35, 0xa8, 0xa9, 0x8e, 0xba, 0xe3, 0x8b, 0xe9, 0x60, 0x22, 0x1d, 0x3a,
-	0x12, 0xe8, 0x0a, 0x14, 0x1a, 0xd0, 0xfb, 0x1c, 0xa4, 0x94, 0x49, 0x55, 0xe2, 0xc0, 0x5f, 0x0b,
-	0x3d, 0xca, 0xcc, 0xae, 0x78, 0x8d, 0xd7, 0xce, 0x03, 0xb8, 0x7c, 0xed, 0xfb, 0x1f, 0x28, 0x49,
-	0x4f, 0x69, 0xd2, 0xe1, 0xaa, 0x44, 0xc9, 0x75, 0x1e, 0x81, 0xee, 0x92, 0x6d, 0xfc, 0x9d, 0x9c,
-	0xe3, 0x1a, 0x80, 0x75, 0xa0, 0xa4, 0x3f, 0x86, 0x7b, 0x6f, 0x36, 0x64, 0xfd, 0xf5, 0xe3, 0x26,
-	0x60, 0x24, 0x0c, 0x28, 0x3b, 0x35, 0xe2, 0x05, 0xdc, 0x54, 0xe0, 0xb7, 0x39, 0x58, 0xfa, 0x32,
-	0x82, 0x8b, 0x1f, 0xc5, 0x04, 0xe2, 0xe7, 0xa4, 0x3b, 0x6e, 0xbd, 0x35, 0xfd, 0xd7, 0x81, 0xbe,
-	0x30, 0x13, 0x17, 0x00, 0x55, 0x2e, 0x38, 0x2c, 0x3c, 0x6c, 0x7c, 0x54, 0x96, 0xd5, 0x76, 0x25,
-	0x85, 0x2b, 0x63, 0x15, 0x67, 0xa0, 0x95, 0x11, 0xa1, 0x59, 0x66, 0x71, 0x94, 0xae, 0x35, 0x6c,
-	0xb9, 0x29, 0xa6, 0xe0, 0x2b, 0xb8, 0x2d, 0x2d, 0xc5, 0x9b, 0x02, 0x77, 0x98, 0x84, 0x35, 0x68,
-	0xf4, 0x4b, 0xf6, 0x1c, 0xa0, 0x32, 0xb5, 0x5a, 0xa5, 0x91, 0x48, 0xb5, 0x4a, 0x4b, 0x06, 0x0a,
-	0xbe, 0x83, 0xcb, 0xc3, 0x14, 0xf0, 0x7e, 0x81, 0x6f, 0x4d, 0xc7, 0xb2, 0x9b, 0xd7, 0xf5, 0x3c,
-	0x1c, 0x65, 0x66, 0xfc, 0xda, 0xdb, 0xea, 0xef, 0xbd, 0xad, 0xfe, 0xd9, 0xdb, 0xea, 0xcf, 0xbf,
-	0xb6, 0xf2, 0xa9, 0x93, 0xac, 0x56, 0xfd, 0xfc, 0x57, 0x7e, 0xf6, 0x3f, 0x00, 0x00, 0xff, 0xff,
-	0xb7, 0xcb, 0xa1, 0xc6, 0xda, 0x03, 0x00, 0x00,
+var fileDescriptor_played_fa05d7c39551f844 = []byte{
+	// 505 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0xcb, 0x6e, 0xd3, 0x50,
+	0x10, 0xb5, 0x13, 0x12, 0xc8, 0xa4, 0x6a, 0x9b, 0x21, 0x6d, 0x5d, 0x53, 0xac, 0xc8, 0x42, 0x10,
+	0x09, 0xd1, 0xa8, 0x65, 0x81, 0x04, 0x6c, 0x28, 0xaa, 0xc2, 0x82, 0x45, 0x31, 0x42, 0x48, 0xdd,
+	0x39, 0xf5, 0x25, 0xb1, 0x70, 0x6c, 0xe3, 0x7b, 0x53, 0xd4, 0x2d, 0x5f, 0x80, 0xc4, 0x4f, 0xc1,
+	0xae, 0x12, 0x1b, 0x96, 0x28, 0xe1, 0x43, 0xd0, 0x7d, 0xf8, 0xd5, 0x58, 0xc9, 0x6e, 0x3c, 0x73,
+	0xce, 0x3c, 0xce, 0xb9, 0x32, 0x6c, 0xc4, 0x81, 0x7b, 0x45, 0xbc, 0xc3, 0x38, 0x89, 0x58, 0x84,
+	0x4d, 0xf9, 0x65, 0x1e, 0x8c, 0xa3, 0x68, 0x1c, 0x90, 0x81, 0x1b, 0xfb, 0x03, 0x37, 0x0c, 0x23,
+	0xe6, 0x32, 0x3f, 0x0a, 0xa9, 0x44, 0xd9, 0x2f, 0xa0, 0xf3, 0x9e, 0x84, 0xde, 0x99, 0xc0, 0x3a,
+	0xe4, 0xcb, 0x8c, 0x50, 0x86, 0x08, 0xb7, 0x66, 0x94, 0x24, 0x86, 0xde, 0xd3, 0xfb, 0x2d, 0x47,
+	0xc4, 0x3c, 0x37, 0x76, 0xa7, 0xc4, 0xa8, 0xc9, 0x1c, 0x8f, 0xed, 0x23, 0x68, 0x0d, 0xdd, 0x29,
+	0x39, 0x0d, 0x59, 0x72, 0xc5, 0x01, 0x21, 0x07, 0x28, 0x12, 0x8f, 0x71, 0x1b, 0xea, 0xde, 0x2c,
+	0x11, 0x9c, 0x86, 0xc3, 0x43, 0xfb, 0x19, 0x6c, 0x65, 0x94, 0xb3, 0xd9, 0x28, 0xf0, 0x2f, 0xd6,
+	0x11, 0x5b, 0x92, 0xd8, 0x05, 0x2c, 0x2e, 0x4a, 0xe3, 0x28, 0xa4, 0xc4, 0x7e, 0x08, 0xdb, 0x43,
+	0xc2, 0xd6, 0x6e, 0x6f, 0x07, 0xd0, 0x29, 0xe0, 0x24, 0x19, 0x9f, 0x40, 0x83, 0x9f, 0x41, 0x0d,
+	0xbd, 0x57, 0xef, 0xb7, 0x8f, 0xf7, 0x0e, 0x95, 0x7e, 0x37, 0x16, 0x74, 0x24, 0x0a, 0xbb, 0xd0,
+	0xf8, 0xe4, 0x27, 0x94, 0xa9, 0xad, 0xe4, 0x07, 0x9f, 0x16, 0xb8, 0x94, 0x19, 0x75, 0x39, 0x8d,
+	0xc7, 0xf6, 0x03, 0xd8, 0x7c, 0xe5, 0x79, 0x1f, 0x28, 0x49, 0x56, 0xed, 0xd4, 0x81, 0xad, 0x0c,
+	0xa5, 0xce, 0x79, 0x04, 0x1d, 0x87, 0x4c, 0xa3, 0x4b, 0xb2, 0x8e, 0xdb, 0x05, 0x2c, 0x02, 0x15,
+	0xfd, 0x31, 0xec, 0xbc, 0x9e, 0x90, 0x8b, 0xcf, 0x1f, 0x27, 0x3e, 0x23, 0x81, 0x4f, 0xd9, 0xaa,
+	0x16, 0xcf, 0x61, 0x37, 0x07, 0xbf, 0x15, 0x60, 0xa5, 0x4b, 0x0f, 0xda, 0x5f, 0xd3, 0x0e, 0xc4,
+	0x13, 0xa4, 0x3b, 0x4e, 0x31, 0xc5, 0xc7, 0x0b, 0xee, 0x1b, 0xe2, 0x06, 0x6c, 0xa2, 0xa6, 0xd8,
+	0x3b, 0x70, 0xb7, 0x94, 0x95, 0xed, 0x8e, 0x7f, 0xd5, 0xa1, 0x29, 0x95, 0xc7, 0x21, 0x40, 0x6e,
+	0x22, 0xee, 0xa7, 0x82, 0x2f, 0xbd, 0x40, 0xd3, 0xac, 0x2a, 0xa9, 0x2b, 0xb5, 0xbe, 0x8e, 0x27,
+	0xd0, 0xca, 0xfc, 0x44, 0x23, 0x33, 0xee, 0xc6, 0x53, 0x30, 0xf7, 0x2b, 0x2a, 0x69, 0x17, 0x7c,
+	0x09, 0xb7, 0x95, 0xfe, 0xb8, 0x9b, 0xe2, 0xca, 0xb6, 0x99, 0x7b, 0x4b, 0xf9, 0x8c, 0x7d, 0x0a,
+	0x90, 0x3b, 0x90, 0x9f, 0xb2, 0x64, 0x5f, 0x7e, 0x4a, 0x85, 0x61, 0x1a, 0xbe, 0x83, 0xcd, 0xb2,
+	0x65, 0x78, 0x3f, 0xc5, 0x57, 0x5a, 0x69, 0x5a, 0xcb, 0xe5, 0xa2, 0x79, 0xb6, 0x86, 0xe7, 0xd0,
+	0x2e, 0xd8, 0x80, 0x66, 0x89, 0x50, 0x72, 0xcc, 0xbc, 0x57, 0x59, 0x53, 0x9d, 0xf0, 0xdb, 0xef,
+	0x7f, 0x3f, 0x6a, 0x1b, 0x08, 0x83, 0xcb, 0xa3, 0xc1, 0x44, 0xd4, 0x4e, 0x0e, 0x7e, 0xce, 0x2d,
+	0xfd, 0x7a, 0x6e, 0xe9, 0x7f, 0xe7, 0x96, 0xfe, 0x7d, 0x61, 0x69, 0xd7, 0x0b, 0x4b, 0xfb, 0xb3,
+	0xb0, 0xb4, 0xf3, 0x5a, 0x3c, 0x1a, 0x35, 0xc5, 0x3f, 0xe5, 0xe9, 0xff, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0x8a, 0x29, 0xc0, 0x61, 0x89, 0x04, 0x00, 0x00,
 }

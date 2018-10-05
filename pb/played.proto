@@ -2,6 +2,8 @@ syntax = "proto3";
 package played;
 option go_package = "pb";
 
+import "google/api/annotations.proto"; 
+
 service Played {
     rpc SendPlayed(stream SendPlayedRequest) returns (SendPlayedResponse) {}
 
@@ -12,6 +14,12 @@ service Played {
     rpc RemoveUser (RemoveUserRequest) returns (RemoveUserResponse) {}
 
     rpc CheckWhitelist (CheckWhitelistRequest) returns (CheckWhiteListResponse) {}
+
+    rpc CheckHealth (CheckHealthRequest) returns (CheckHealthResponse) {
+        option (google.api.http) = {
+            get: "/v1/health"
+        };
+    }
 }
 
 message SendPlayedRequest {
@@ -60,3 +68,7 @@ message CheckWhitelistRequest {
 message CheckWhiteListResponse {
     bool whitelisted = 1;
 }
+
+message CheckHealthRequest {}
+
+message CheckHealthResponse {}
