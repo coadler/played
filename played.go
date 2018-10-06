@@ -115,6 +115,9 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	s.DB.Transact(func(t fdb.Transaction) (ret interface{}, err error) {
 		// because of the low cost of time.Now and PutUint64 i'd rather
 		// prefer idempotence because this will be retried if there is a conflict
+		//
+		// also little endian is used because foundationdb's atomic add function
+		// requires little endian encoded uints
 		var (
 			timeNow = time.Now()
 			// 64 bit
