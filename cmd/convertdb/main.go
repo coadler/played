@@ -97,9 +97,9 @@ func main() {
 						}
 					}
 
-					if len(kParts) == 4 {
+					if len(kParts) > 3 {
 						user := kParts[1]
-						game := kParts[3]
+						game := bytes.Join(kParts[3:], []byte(":"))
 
 						t.Set(playedSub.Pack(tuple.Tuple{string(user), string(game)}), val)
 					}

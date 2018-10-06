@@ -11,7 +11,6 @@ import (
 	"log"
 	"net"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/codercom/retry"
@@ -20,8 +19,8 @@ import (
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
-	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/coadler/played/pb"
 	"github.com/dgraph-io/badger"
 	"github.com/go-redis/redis"
@@ -104,18 +103,9 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		return err
 	}
 
-	_ = strings.Compare
-	_ = w
-	// if w != 1 && !strings.HasPrefix(user, "10") {
-	// 	return nil
-	// }
-
-	var (
-		timeNow = time.Now()
-		// 64 bit
-		now [8]byte
-	)
-	binary.LittleEndian.PutUint64(now[:], uint64(timeNow.Unix()))
+	if w != 1 {
+		return nil
+	}
 
 	var (
 		fsKey   = s.FirstSeen.Pack(tuple.Tuple{user})
@@ -123,6 +113,15 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		lastKey = s.LastUpdated.Pack(tuple.Tuple{user})
 	)
 	s.DB.Transact(func(t fdb.Transaction) (ret interface{}, err error) {
+		// because of the low cost of time.Now and PutUint64 i'd rather
+		// prefer idempotence because this will be retried if there is a conflict
+		var (
+			timeNow = time.Now()
+			// 64 bit
+			now [8]byte
+		)
+		binary.LittleEndian.PutUint64(now[:], uint64(timeNow.Unix()))
+
 		first := t.Get(fsKey).MustGet()
 		if first == nil {
 			t.Set(fsKey, now[:])
@@ -210,8 +209,9 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 
 	ranger := s.Played.Pack(tuple.Tuple{req.User})
 	s.DB.ReadTransact(func(t fdb.ReadTransaction) (ret interface{}, err error) {
+		ss := t.Snapshot()
 		pre, _ := fdb.PrefixRange(ranger.FDBKey())
-		r := t.GetRange(pre, fdb.RangeOptions{
+		r := ss.GetRange(pre, fdb.RangeOptions{
 			Mode: fdb.StreamingModeWantAll,
 		}).Iterator()
 		for r.Advance() {
@@ -224,7 +224,7 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 
 			gms = append(gms, &pb.GameEntry{
 				Name: parts[1].(string),
-				Dur: int32(binary.LittleEndian.Uint32(k.Value)),
+				Dur:  int32(binary.LittleEndian.Uint32(k.Value)),
 			})
 		}
 
