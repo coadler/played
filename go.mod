@@ -3,6 +3,7 @@ module github.com/coadler/played
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57 // indirect
 	github.com/apple/foundationdb v0.0.0-20180924171112-a10ac552a5bc
+	github.com/boltdb/bolt v1.3.1
 	github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395
 	github.com/codercom/retry v1.1.0
 	github.com/davecgh/go-spew v1.1.1 // indirect

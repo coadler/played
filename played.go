@@ -21,6 +21,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
+	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/coadler/played/pb"
 	"github.com/dgraph-io/badger"
 	"github.com/go-redis/redis"
@@ -35,10 +36,10 @@ type PlayedServer struct {
 	DB    fdb.Database
 	Redis *redis.Client
 
-	FirstSeen   directory.DirectorySubspace
-	LastUpdated directory.DirectorySubspace
-	Current     directory.DirectorySubspace
-	Played      directory.DirectorySubspace
+	FirstSeen   subspace.Subspace
+	LastUpdated subspace.Subspace
+	Current     subspace.Subspace
+	Played      subspace.Subspace
 }
 
 func Start() {
@@ -50,29 +51,16 @@ func Start() {
 	fdb.MustAPIVersion(510)
 	db := fdb.MustOpenDefault()
 
-	firstSeen, err := directory.CreateOrOpen(db, []string{"first-seen"}, nil)
-	if err != nil {
-		logger.Error("failed to create fdb directory", zap.Error(err))
-		return
-	}
-
-	lastUpdated, err := directory.CreateOrOpen(db, []string{"last-updated"}, nil)
-	if err != nil {
-		logger.Error("failed to create fdb directory", zap.Error(err))
-		return
-	}
-
-	current, err := directory.CreateOrOpen(db, []string{"current"}, nil)
-	if err != nil {
-		logger.Error("failed to create fdb directory", zap.Error(err))
-		return
-	}
-
 	playedDir, err := directory.CreateOrOpen(db, []string{"played"}, nil)
 	if err != nil {
 		logger.Error("failed to create fdb directory", zap.Error(err))
 		return
 	}
+
+	current := playedDir.Sub("current")
+	lastUpdated := playedDir.Sub("last-updated")
+	firstSeen := playedDir.Sub("first-seen")
+	playedSub := playedDir.Sub("played")
 
 	rc := redis.NewClient(
 		&redis.Options{
@@ -91,7 +79,7 @@ func Start() {
 	// go http.ListenAndServe(":8089", nil)
 
 	srv := grpc.NewServer()
-	played := &PlayedServer{logger, db, rc, firstSeen, lastUpdated, current, playedDir}
+	played := &PlayedServer{logger, db, rc, firstSeen, lastUpdated, current, playedSub}
 	pb.RegisterPlayedServer(srv, played)
 	logger.Info("Listening on port :8089")
 	srv.Serve(lis)
@@ -127,7 +115,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		// 64 bit
 		now [8]byte
 	)
-	binary.BigEndian.PutUint64(now[:], uint64(timeNow.Unix()))
+	binary.LittleEndian.PutUint64(now[:], uint64(timeNow.Unix()))
 
 	var (
 		fsKey   = s.FirstSeen.Pack(tuple.Tuple{user})
@@ -147,7 +135,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 			return
 		}
 
-
 		if bytes.Equal(curVal, []byte(game)) {
 			return
 		}
@@ -157,7 +144,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		lastChanged := timeNow
 		lastChangedRaw := t.Get(lastKey).MustGet()
 		if lastChangedRaw != nil && len(lastChangedRaw) == 8 {
-			lastChanged = time.Unix(int64(binary.BigEndian.Uint64(lastChangedRaw)), 0)
+			lastChanged = time.Unix(int64(binary.LittleEndian.Uint64(lastChangedRaw)), 0)
 		}
 
 		fmt.Println(user, game)
@@ -169,32 +156,10 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 			return
 		}
 
-		curGame := string(curVal)
-		curGameKey := s.Played.Pack(tuple.Tuple{user, curGame})
-		curEntry := t.Get(curGameKey).MustGet()
-		if curEntry == nil {
-			raw, err := (&pb.GameEntry{
-				Name: curGame,
-				Dur:  int32(timeNow.Sub(lastChanged).Seconds()),
-			}).Marshal()
-			if err != nil {
-				return nil, err
-			}
-
-			t.Set(curGameKey, raw)
-			return nil, nil
-		}
-
-		entry := new(pb.GameEntry)
-		entry.Unmarshal(curEntry)
-		entry.Dur += int32(timeNow.Sub(lastChanged).Seconds())
-
-		raw, err := entry.Marshal()
-		if err != nil {
-			return nil, err
-		}
-
-		t.Set(curGameKey, raw)
+		curGameKey := s.Played.Pack(tuple.Tuple{user, string(curVal)})
+		toAdd := [8]byte{}
+		binary.LittleEndian.PutUint32(toAdd[:], uint32(timeNow.Sub(lastChanged).Seconds()))
+		t.Add(curGameKey, toAdd[:])
 		return
 	})
 
@@ -246,27 +211,28 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	ranger := s.Played.Pack(tuple.Tuple{req.User})
 	s.DB.ReadTransact(func(t fdb.ReadTransaction) (ret interface{}, err error) {
 		pre, _ := fdb.PrefixRange(ranger.FDBKey())
-		r := t.GetRange(pre, fdb.RangeOptions{}).Iterator()
+		r := t.GetRange(pre, fdb.RangeOptions{
+			Mode: fdb.StreamingModeWantAll,
+		}).Iterator()
 		for r.Advance() {
 			k := r.MustGet()
 
-			fmt.Println("key:", string(k.Key))
-			fmt.Println("val:", string(k.Value))
-			entry := new(pb.GameEntry)
-			err = entry.Unmarshal(k.Value)
+			parts, err := s.Played.Unpack(k.Key)
 			if err != nil {
-				s.log.Info("huh", zap.Error(err))
-				return
+				return nil, err
 			}
 
-			gms = append(gms, entry)
+			gms = append(gms, &pb.GameEntry{
+				Name: parts[1].(string),
+				Dur: int32(binary.LittleEndian.Uint32(k.Value)),
+			})
 		}
 
 		first := t.Get(s.FirstSeen.Pack(tuple.Tuple{req.User})).MustGet()
-		resp.First = humanize.Time(time.Unix(int64(binary.BigEndian.Uint64(first)), 0))
+		resp.First = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(first)), 0))
 
 		last := t.Get(s.LastUpdated.Pack(tuple.Tuple{req.User})).MustGet()
-		resp.Last = humanize.Time(time.Unix(int64(binary.BigEndian.Uint64(last)), 0))
+		resp.Last = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(last)), 0))
 
 		return
 	})

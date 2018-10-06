@@ -2,6 +2,8 @@ github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57 h1:CVuXDbdzPW
 github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/apple/foundationdb v0.0.0-20180924171112-a10ac552a5bc h1:Rv4s233vlx5pcywmAamVBA/fjo3kylOUT/wiRYgeuis=
 github.com/apple/foundationdb v0.0.0-20180924171112-a10ac552a5bc/go.mod h1:r68WTUyFp2yVpUaqVBncjC7C62Cuom4IiEuRCVEKRbw=
+github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
+github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395 h1:E/Ud88cI76ICqxdfP76SpqTNC132ukFlUOzTV/n5rCE=
 github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395/go.mod h1:5NIvFv5Z7HddYuXbuQegZ684DleQaCFqChP2iuBivJ8=
 github.com/codercom/retry v1.1.0 h1:+b5f7heWtZ50O9ypIDxa2E96Xfb66dKzN3FXarwzzrU=

@@ -5,6 +5,8 @@ github.com/apple/foundationdb/bindings/go/src/fdb
 github.com/apple/foundationdb/bindings/go/src/fdb/directory
 github.com/apple/foundationdb/bindings/go/src/fdb/tuple
 github.com/apple/foundationdb/bindings/go/src/fdb/subspace
+# github.com/boltdb/bolt v1.3.1
+github.com/boltdb/bolt
 # github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395
 github.com/bwmarrin/discordgo
 # github.com/codercom/retry v1.1.0
