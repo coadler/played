@@ -89,6 +89,13 @@ func fmtWhitelistKey(user string) string {
 }
 
 func (s *PlayedServer) processPlayed(user, game string) error {
+	defer func() {
+		err := recover()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
 	if user == "" {
 		s.log.Error("processPlayed called with empty user", zap.String("user", user))
 		return errors.New("can't process empty user or game")
