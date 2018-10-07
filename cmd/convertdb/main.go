@@ -11,6 +11,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/boltdb/bolt"
 	"github.com/dgraph-io/badger"
+	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 )
 
@@ -38,19 +39,36 @@ func main() {
 	}
 	defer bdb.Close()
 
+	rc := redis.NewClient(
+		&redis.Options{
+			Addr:     "localhost:6379",
+			Password: "",
+			DB:       0,
+		},
+	)
+
 	key := []byte("whitelist")
 	err = bdb.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(key)
+		bucket, err := tx.CreateBucketIfNotExists(key)
+		if err != nil {
+			return err
+		}
+
+		c := bucket.Cursor()
+
+		for k, _ := c.First(); k != nil; k, _ = c.Next() {
+			err := rc.Set(string(k), "", 0).Err()
+			if err != nil {
+				fmt.Println("redis err:", err)
+			}
+		}
+
 		return err
 	})
 	if err != nil {
-		logger.Error("failed to create bolt bucket", zap.Error(err))
+		logger.Error("bolt error", zap.Error(err))
 		return
 	}
-
-	db.Update(func(txn *badger.Txn) error {
-		return txn.Delete([]byte("lololol"))
-	})
 
 	fdb.MustAPIVersion(510)
 	newdb := fdb.MustOpenDefault()
