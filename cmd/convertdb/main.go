@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/boltdb/bolt"
+	"github.com/coadler/played/pb"
 	"github.com/dgraph-io/badger"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
@@ -105,10 +107,17 @@ func main() {
 						kind := kParts[2]
 
 						if string(kind) == "firstseen" {
-							t.Set(firstSeen.Pack(tuple.Tuple{string(user)}), val)
+							convRaw := [8]byte{}
+							conv := binary.BigEndian.Uint64(val)
+							binary.LittleEndian.PutUint64(convRaw[:], conv)
+
+							t.Set(firstSeen.Pack(tuple.Tuple{string(user)}), convRaw[:])
 						}
 						if string(kind) == "lastchanged" {
-							t.Set(lastUpdated.Pack(tuple.Tuple{string(user)}), val)
+							convRaw := [8]byte{}
+							conv := binary.BigEndian.Uint64(val)
+							binary.LittleEndian.PutUint64(convRaw[:], conv)
+							t.Set(lastUpdated.Pack(tuple.Tuple{string(user)}), convRaw[:])
 						}
 						if string(kind) == "current" {
 							t.Set(current.Pack(tuple.Tuple{string(user)}), val)
@@ -119,7 +128,17 @@ func main() {
 						user := kParts[1]
 						game := bytes.Join(kParts[3:], []byte(":"))
 
-						t.Set(playedSub.Pack(tuple.Tuple{string(user), string(game)}), val)
+						gameEntry := new(pb.GameEntry)
+						err := gameEntry.Unmarshal(val)
+						if err != nil {
+							fmt.Println("err unmarshaling game entry", err)
+							return nil, nil
+						}
+
+						convRaw := [8]byte{}
+						binary.LittleEndian.PutUint32(convRaw[:], uint32(gameEntry.Dur))
+
+						t.Set(playedSub.Pack(tuple.Tuple{string(user), string(game)}), convRaw[:])
 					}
 
 					return
