@@ -5,4 +5,6 @@ LOCK
 MANIFEST
 whitelist.db
 
+cmd/playedd/playedd
+
 foundationdb/
