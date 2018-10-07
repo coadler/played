@@ -239,10 +239,18 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 		}
 
 		first := t.Get(s.FirstSeen.Pack(tuple.Tuple{req.User})).MustGet()
-		resp.First = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(first)), 0))
+		if first != nil {
+			resp.First = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(first)), 0))
+		} else {
+			resp.First = "Never"
+		}
 
 		last := t.Get(s.LastUpdated.Pack(tuple.Tuple{req.User})).MustGet()
-		resp.Last = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(last)), 0))
+		if last != nil {
+			resp.Last = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(last)), 0))
+		} else {
+			resp.Last = "Never"
+		}
 
 		return
 	})
