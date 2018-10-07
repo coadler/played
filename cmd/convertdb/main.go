@@ -59,7 +59,7 @@ func main() {
 		c := bucket.Cursor()
 
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			err := rc.Set(string(k), "", 0).Err()
+			err := rc.Set("played:whitelist:"+string(k), "", 0).Err()
 			if err != nil {
 				fmt.Println("redis err:", err)
 			}
@@ -71,6 +71,8 @@ func main() {
 		logger.Error("bolt error", zap.Error(err))
 		return
 	}
+
+	return
 
 	fdb.MustAPIVersion(510)
 	newdb := fdb.MustOpenDefault()
