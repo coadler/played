@@ -7,7 +7,6 @@ import (
 	"errors"
 	_ "expvar"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"sort"
@@ -18,14 +17,10 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/coadler/played/pb"
-	"github.com/codercom/retry"
-	"github.com/dgraph-io/badger"
 	"github.com/dustin/go-humanize"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type PlayedServer struct {
@@ -55,10 +50,12 @@ func Start() {
 		return
 	}
 
-	current := playedDir.Sub("current")
-	lastUpdated := playedDir.Sub("last-updated")
-	firstSeen := playedDir.Sub("first-seen")
-	playedSub := playedDir.Sub("played")
+	var (
+		current     = playedDir.Sub("current")
+		lastUpdated = playedDir.Sub("last-updated")
+		firstSeen   = playedDir.Sub("first-seen")
+		playedSub   = playedDir.Sub("played")
+	)
 
 	rc := redis.NewClient(
 		&redis.Options{
@@ -155,7 +152,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 			lastChanged = time.Unix(int64(binary.LittleEndian.Uint64(lastChangedRaw)), 0)
 		}
 
-		fmt.Println(user, game)
 		t.Set(lastKey, now[:])
 		t.Set(curKey, []byte(game))
 
@@ -172,43 +168,6 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	})
 
 	return err
-}
-
-func (s *PlayedServer) SendPlayed(stream pb.Played_SendPlayedServer) error {
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			if err == io.EOF {
-				return stream.SendAndClose(&pb.SendPlayedResponse{})
-			}
-
-			s.log.Error("error receiving", zap.Error(err))
-			return stream.SendAndClose(&pb.SendPlayedResponse{})
-		}
-
-		if msg == nil {
-			s.log.Error("msg is nil (!)")
-			return status.Errorf(codes.Internal, "msg became nil")
-		}
-
-		user, game := msg.User, msg.Game
-		go func() {
-			err = retry.
-				New(5 * time.Millisecond).
-				Timeout(2 * time.Second).
-				Backoff(200 * time.Millisecond).
-				Condition(func(err error) bool {
-					return err == badger.ErrConflict
-				}).
-				Run(func() error {
-					return s.processPlayed(user, game)
-				})
-			if err != nil {
-				s.log.Error("failed to process played message", zap.Error(err))
-			}
-		}()
-
-	}
 }
 
 func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
@@ -263,11 +222,6 @@ func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*
 	}
 
 	return resp, nil
-}
-
-func (s *PlayedServer) CheckHealth(c context.Context, req *pb.CheckHealthRequest) (*pb.CheckHealthResponse, error) {
-	s.log.Debug("got health check")
-	return &pb.CheckHealthResponse{}, nil
 }
 
 type Games []*pb.GameEntry

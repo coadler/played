@@ -8,10 +8,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/coadler/played/pb"
 	"github.com/bwmarrin/discordgo"
 	"google.golang.org/grpc"
+
+	"github.com/coadler/played/pb"
 )
+
+const Token = "Bot ..."
 
 func main() {
 	dg, err := discordgo.New("Bot " + Token)
@@ -26,17 +29,13 @@ func main() {
 	}
 	c := pb.NewPlayedClient(conn)
 
-	dg.AddHandler(presenceSend(c))
 	dg.AddHandler(messageCreate(c))
-	dg.AddHandler(presenceSend2(c))
-	dg.AddHandler(guildCreate(c))
 
 	err = dg.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
 	}
-	// start := time.Now()
 
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
@@ -44,86 +43,6 @@ func main() {
 	<-sc
 
 	dg.Close()
-}
-
-func presenceSend2(c pb.PlayedClient) func(s *discordgo.Session, m *discordgo.PresencesReplace) {
-	ctx := context.Background()
-	p, err := c.SendPlayed(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return func(s *discordgo.Session, m *discordgo.PresencesReplace) {}
-	}
-
-	return func(s *discordgo.Session, m *discordgo.PresencesReplace) {
-		for _, e := range *m {
-			name := ""
-			if e.Game != nil {
-				name = e.Game.Name
-			}
-
-			err := p.Send(&pb.SendPlayedRequest{
-				User: e.User.ID,
-				Game: name,
-			})
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-}
-
-func presenceSend(c pb.PlayedClient) func(s *discordgo.Session, m *discordgo.PresenceUpdate) {
-	ctx := context.Background()
-	p, err := c.SendPlayed(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return func(s *discordgo.Session, m *discordgo.PresenceUpdate) {}
-	}
-
-	return func(s *discordgo.Session, m *discordgo.PresenceUpdate) {
-		name := ""
-		if m.Game != nil {
-			name = m.Game.Name
-		}
-
-		err := p.Send(&pb.SendPlayedRequest{
-			User: m.User.ID,
-			Game: name,
-		})
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-}
-
-func guildCreate(c pb.PlayedClient) func(s *discordgo.Session, g *discordgo.GuildCreate) {
-	ctx := context.Background()
-	p, err := c.SendPlayed(ctx)
-	if err != nil {
-		fmt.Println(err)
-		return func(s *discordgo.Session, g *discordgo.GuildCreate) {}
-	}
-
-	return func(s *discordgo.Session, g *discordgo.GuildCreate) {
-		if g.Unavailable {
-			return
-		}
-
-		for _, e := range g.Presences {
-			name := ""
-			if e.Game != nil {
-				name = e.Game.Name
-			}
-
-			err := p.Send(&pb.SendPlayedRequest{
-				User: e.User.ID,
-				Game: name,
-			})
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
 }
 
 func messageCreate(c pb.PlayedClient) func(s *discordgo.Session, m *discordgo.MessageCreate) {
