@@ -1,7 +1,7 @@
 github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57 h1:CVuXDbdzPW0XCNYTldy5dQues57geAs+vfwz3FTTpy8=
 github.com/AndreasBriese/bbloom v0.0.0-20170702084017-28f7e881ca57/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
-github.com/apple/foundationdb v0.0.0-20180924171112-a10ac552a5bc h1:Rv4s233vlx5pcywmAamVBA/fjo3kylOUT/wiRYgeuis=
-github.com/apple/foundationdb v0.0.0-20180924171112-a10ac552a5bc/go.mod h1:r68WTUyFp2yVpUaqVBncjC7C62Cuom4IiEuRCVEKRbw=
+github.com/apple/foundationdb/bindings/go v0.0.0-20190719234103-d6cf18f2e124 h1:nnVIPwV0oMPvUxttqd1ijQ3IKovmJUHWVDGcXfWtXrI=
+github.com/apple/foundationdb/bindings/go v0.0.0-20190719234103-d6cf18f2e124/go.mod h1:OMVSB21p9+xQUIqlGizHPZfjK+SHws1ht+ZytVDoz9U=
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395 h1:E/Ud88cI76ICqxdfP76SpqTNC132ukFlUOzTV/n5rCE=

@@ -3,10 +3,11 @@ package played
 import (
 	"context"
 
-	"github.com/coadler/played/pb"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+
+	"github.com/coadler/played/pb"
 )
 
 func (s *PlayedServer) AddUser(ctx context.Context, req *pb.AddUserRequest) (*pb.AddUserResponse, error) {

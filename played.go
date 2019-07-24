@@ -13,17 +13,16 @@ import (
 	"sort"
 	"time"
 
-	"github.com/codercom/retry"
-	"github.com/dustin/go-humanize"
-	"go.uber.org/zap"
-
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/coadler/played/pb"
+	"github.com/codercom/retry"
 	"github.com/dgraph-io/badger"
+	"github.com/dustin/go-humanize"
 	"github.com/go-redis/redis"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -47,7 +46,7 @@ func Start() {
 		log.Println(err.Error())
 	}
 
-	fdb.MustAPIVersion(510)
+	fdb.MustAPIVersion(610)
 	db := fdb.MustOpenDefault()
 
 	playedDir, err := directory.CreateOrOpen(db, []string{"played"}, nil)
