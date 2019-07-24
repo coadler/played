@@ -70,7 +70,10 @@ func (s *Server) processPlayed(user, game string) error {
 		}
 
 		toAdd := [8]byte{}
-		binary.LittleEndian.PutUint32(toAdd[:], uint32(timeNow.Sub(lastChanged).Seconds()))
+		binary.LittleEndian.PutUint32(
+			toAdd[:],
+			uint32(timeNow.Sub(lastChanged).Seconds()),
+		)
 
 		t.Add(s.fmtPlayedUserGame(user, string(curVal)), toAdd[:])
 		return

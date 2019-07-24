@@ -41,8 +41,8 @@ func (s *Server) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.Get
 			})
 		}
 
-		resp.First = s.humanTimeFromUnix(t.Get(s.fmtFirstSeenKey(req.User)).MustGet())
-		resp.Last = s.humanTimeFromUnix(t.Get(s.fmtLastUpdatedKey(req.User)).MustGet())
+		resp.First = humanTimeFromUnix(t.Get(s.fmtFirstSeenKey(req.User)).MustGet())
+		resp.Last = humanTimeFromUnix(t.Get(s.fmtLastUpdatedKey(req.User)).MustGet())
 
 		return nil, nil
 	})
