@@ -2,14 +2,12 @@ package played
 
 import (
 	"bytes"
-	"context"
 	"encoding/binary"
 	"errors"
 	_ "expvar"
 	"fmt"
 	"log"
 	"net"
-	"sort"
 	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -17,45 +15,54 @@ import (
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"github.com/coadler/played/pb"
-	"github.com/dustin/go-humanize"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
-type PlayedServer struct {
+type Server struct {
 	log *zap.Logger
 
-	DB    fdb.Database
-	Redis *redis.Client
+	db  fdb.Database
+	rdb *redis.Client
 
+	subs Subspaces
+}
+
+type Subspaces struct {
 	FirstSeen   subspace.Subspace
 	LastUpdated subspace.Subspace
 	Current     subspace.Subspace
 	Played      subspace.Subspace
 }
 
+func NewServer(logger *zap.Logger, db fdb.Database, redis *redis.Client) (*Server, error) {
+	dir, err := directory.CreateOrOpen(db, []string{"played"}, nil)
+	if err != nil {
+		logger.Fatal("failed to create fdb directory", zap.Error(err))
+	}
+
+	return &Server{
+		log: logger,
+		db:  db,
+		rdb: redis,
+		subs: Subspaces{
+			FirstSeen:   dir.Sub("first-seen"),
+			LastUpdated: dir.Sub("last_updated"),
+			Current:     dir.Sub("current"),
+			Played:      dir.Sub("played"),
+		},
+	}, nil
+}
+
 func Start() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		log.Println(err.Error())
+		log.Fatal("failed to create zap logger:", err)
 	}
 
 	fdb.MustAPIVersion(610)
 	db := fdb.MustOpenDefault()
-
-	playedDir, err := directory.CreateOrOpen(db, []string{"played"}, nil)
-	if err != nil {
-		logger.Error("failed to create fdb directory", zap.Error(err))
-		return
-	}
-
-	var (
-		current     = playedDir.Sub("current")
-		lastUpdated = playedDir.Sub("last-updated")
-		firstSeen   = playedDir.Sub("first-seen")
-		playedSub   = playedDir.Sub("played")
-	)
 
 	rc := redis.NewClient(
 		&redis.Options{
@@ -84,7 +91,7 @@ func fmtWhitelistKey(user string) string {
 	return fmt.Sprintf("played:whitelist:%s", user)
 }
 
-func (s *PlayedServer) processPlayed(user, game string) error {
+func (s *Server) processPlayed(user, game string) error {
 	defer func() {
 		err := recover()
 		if err != nil {
@@ -101,7 +108,7 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 		err error
 	)
 
-	w, err := s.Redis.Exists(fmtWhitelistKey(user)).Result()
+	w, err := s.rdb.Exists(fmtWhitelistKey(user)).Result()
 	if err != nil {
 		return err
 	}
@@ -111,10 +118,11 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	}
 
 	var (
-		fsKey   = s.FirstSeen.Pack(tuple.Tuple{user})
-		curKey  = s.Current.Pack(tuple.Tuple{user})
-		lastKey = s.LastUpdated.Pack(tuple.Tuple{user})
+		fsKey   = s.subs.FirstSeen.Pack(tuple.Tuple{user})
+		curKey  = s.subs.Current.Pack(tuple.Tuple{user})
+		lastKey = s.subs.LastUpdated.Pack(tuple.Tuple{user})
 	)
+
 	s.DB.Transact(func(t fdb.Transaction) (ret interface{}, err error) {
 		// because of the low cost of time.Now and PutUint64 i'd rather
 		// prefer idempotence because this will be retried if there is a conflict
@@ -168,72 +176,4 @@ func (s *PlayedServer) processPlayed(user, game string) error {
 	})
 
 	return err
-}
-
-func (s *PlayedServer) GetPlayed(c context.Context, req *pb.GetPlayedRequest) (*pb.GetPlayedResponse, error) {
-	resp := new(pb.GetPlayedResponse)
-	resp.Games = []*pb.GameEntryPublic{}
-	gms := Games{}
-
-	ranger := s.Played.Pack(tuple.Tuple{req.User})
-	s.DB.ReadTransact(func(t fdb.ReadTransaction) (ret interface{}, err error) {
-		ss := t.Snapshot()
-		pre, _ := fdb.PrefixRange(ranger.FDBKey())
-		r := ss.GetRange(pre, fdb.RangeOptions{
-			Mode: fdb.StreamingModeWantAll,
-		}).Iterator()
-		for r.Advance() {
-			k := r.MustGet()
-
-			parts, err := s.Played.Unpack(k.Key)
-			if err != nil {
-				return nil, err
-			}
-
-			gms = append(gms, &pb.GameEntry{
-				Name: parts[1].(string),
-				Dur:  int32(binary.LittleEndian.Uint32(k.Value)),
-			})
-		}
-
-		first := t.Get(s.FirstSeen.Pack(tuple.Tuple{req.User})).MustGet()
-		if first != nil {
-			resp.First = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(first)), 0))
-		} else {
-			resp.First = "Never"
-		}
-
-		last := t.Get(s.LastUpdated.Pack(tuple.Tuple{req.User})).MustGet()
-		if last != nil {
-			resp.Last = humanize.Time(time.Unix(int64(binary.LittleEndian.Uint64(last)), 0))
-		} else {
-			resp.Last = "Never"
-		}
-
-		return
-	})
-
-	sort.Sort(gms)
-	for _, e := range gms {
-		resp.Games = append(resp.Games, &pb.GameEntryPublic{
-			Name: e.Name,
-			Dur:  (time.Duration(e.Dur) * time.Second).String(),
-		})
-	}
-
-	return resp, nil
-}
-
-type Games []*pb.GameEntry
-
-func (g Games) Len() int {
-	return len(g)
-}
-
-func (g Games) Swap(i, j int) {
-	g[i], g[j] = g[j], g[i]
-}
-
-func (g Games) Less(i, j int) bool {
-	return g[i].Dur >= g[j].Dur
 }
