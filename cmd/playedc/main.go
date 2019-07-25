@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:8089", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:8090", grpc.WithInsecure())
 	if err != nil {
 		panic(err.Error())
 	}
@@ -28,7 +28,7 @@ func main() {
 		// 		User: "105484726235607040",
 		// 		Game: fmt.Sprintf("%d", game),
 		// 	})
-                //
+		//
 		// 	game++
 		// 	time.Sleep(5 * time.Second)
 		// }
@@ -50,7 +50,7 @@ func main() {
 		// 	fmt.Println(err)
 		// 	return
 		// }
-                //
+		//
 		// fmt.Println(res.Whitelisted)
 	}()
 

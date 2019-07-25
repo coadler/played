@@ -9,14 +9,14 @@ import (
 )
 
 func (s *Server) processPlayed(user, game string) error {
-	w, err := s.rdb.Exists(fmtWhitelistKey(user)).Result()
-	if err != nil {
-		return err
-	}
+	// w, err := s.rdb.Exists(fmtWhitelistKey(user)).Result()
+	// if err != nil {
+	// 	return err
+	// }
 
-	if w != 1 {
-		return nil
-	}
+	// if w != 1 {
+	// 	return nil
+	// }
 
 	var (
 		fsKey   = s.fmtFirstSeenKey(user)
