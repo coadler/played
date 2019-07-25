@@ -23,18 +23,19 @@ func (s *Server) blpopForever() {
 			continue
 		}
 
-		pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(res[0]))
-		if err != nil {
-			s.log.Error("failed to decode presence", zap.Error(err))
-			continue
-		}
+		for _, e := range res {
+			pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(e))
+			if err != nil {
+				s.log.Error("failed to decode presence", zap.Error(err))
+				continue
+			}
 
-		s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
-		err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
-		if err != nil {
-			s.log.Error("failed to process presence", zap.Error(err))
+			s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
+			err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
+			if err != nil {
+				s.log.Error("failed to process presence", zap.Error(err))
+			}
 		}
-
 	}
 }
 
