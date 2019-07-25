@@ -2,8 +2,6 @@ package played
 
 import (
 	_ "expvar"
-	"fmt"
-	"log"
 	"net"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -50,38 +48,18 @@ func NewServer(logger *zap.Logger, db fdb.Database, redis *redis.Client) (*Serve
 	}, nil
 }
 
-func Start() {
-	logger, err := zap.NewDevelopment()
+func (s *Server) Start() {
+	lis, err := net.Listen("tcp", "0.0.0.0:8090")
 	if err != nil {
-		log.Fatal("failed to create zap logger:", err)
-	}
-
-	fdb.MustAPIVersion(610)
-	db := fdb.MustOpenDefault()
-
-	rc := redis.NewClient(
-		&redis.Options{
-			Addr:     "localhost:6379",
-			Password: "",
-			DB:       0,
-		},
-	)
-
-	lis, err := net.Listen("tcp", "0.0.0.0:8089")
-	if err != nil {
-		logger.Error("failed to listen", zap.Error(err))
+		s.log.Error("failed to listen", zap.Error(err))
 		return
 	}
 
-	// go http.ListenAndServe(":8089", nil)
+	s.startReadRoutines(5)
 
 	srv := grpc.NewServer()
-	played := &PlayedServer{logger, db, rc, firstSeen, lastUpdated, current, playedSub}
-	pb.RegisterPlayedServer(srv, played)
-	logger.Info("Listening on port :8089")
-	srv.Serve(lis)
-}
+	pb.RegisterPlayedServer(srv, s)
 
-func fmtWhitelistKey(user string) string {
-	return fmt.Sprintf("played:whitelist:%s", user)
+	s.log.Info("Listening on port :8090")
+	srv.Serve(lis)
 }

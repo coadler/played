@@ -1,6 +1,8 @@
 package played
 
 import (
+	"fmt"
+
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/tuple"
 	"golang.org/x/xerrors"
@@ -38,4 +40,8 @@ func (s *Server) fmtLastUpdatedKey(user string) fdb.Key {
 
 func (s *Server) fmtCurrentGameKey(user string) fdb.Key {
 	return s.subs.Current.Pack(tuple.Tuple{user})
+}
+
+func fmtWhitelistKey(user string) string {
+	return fmt.Sprintf("played:whitelist:%s", user)
 }

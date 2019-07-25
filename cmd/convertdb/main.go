@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/boltdb/bolt"
 	"github.com/go-redis/redis"
