@@ -16,10 +16,10 @@ func main() {
 	fdb.MustAPIVersion(610)
 	db := fdb.MustOpenDefault()
 
-	rdb, err := redis.NewClient(&redis.Options{
+	rdb := redis.NewClient(&redis.Options{
 		Addr: "localhost:6380",
 	})
-	if err != nil {
+	if _, err := rdb.Ping().Result(); err != nil {
 		logger.Fatal("failed to connect to redis", zap.Error(err))
 	}
 
