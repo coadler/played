@@ -29,7 +29,7 @@ type Subspaces struct {
 	Played      subspace.Subspace
 }
 
-func NewServer(logger *zap.Logger, db fdb.Database, redis *redis.Client) (*Server, error) {
+func NewServer(logger *zap.Logger, db fdb.Database, rdb *redis.Client) (*Server, error) {
 	dir, err := directory.CreateOrOpen(db, []string{"played"}, nil)
 	if err != nil {
 		logger.Fatal("failed to create fdb directory", zap.Error(err))
@@ -38,7 +38,7 @@ func NewServer(logger *zap.Logger, db fdb.Database, redis *redis.Client) (*Serve
 	return &Server{
 		log: logger,
 		db:  db,
-		rdb: redis,
+		rdb: rdb,
 		subs: Subspaces{
 			FirstSeen:   dir.Sub("first-seen"),
 			LastUpdated: dir.Sub("last_updated"),
