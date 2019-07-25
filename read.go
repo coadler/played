@@ -11,24 +11,25 @@ import (
 
 func (s *Server) startReadRoutines(parallel int) {
 	for i := 0; i < parallel; i++ {
-		go s.lpopForever()
+		go s.blpopForever()
 	}
 }
 
-func (s *Server) lpopForever() {
+func (s *Server) blpopForever() {
 	for {
-		res, err := s.rdb.LPop("gateway:events:presence_update").Result()
+		res, err := s.rdb.BLPop(0, "gateway:events:presence_update").Result()
 		if err != nil {
 			s.log.Error("failed to lpop", zap.Error(err))
 			continue
 		}
 
-		pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(res))
+		pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(res[0]))
 		if err != nil {
 			s.log.Error("failed to decode presence", zap.Error(err))
 			continue
 		}
 
+		s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
 		err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
 		if err != nil {
 			s.log.Error("failed to process presence", zap.Error(err))
