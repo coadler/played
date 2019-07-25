@@ -49,7 +49,7 @@ func NewServer(logger *zap.Logger, db fdb.Database, redis *redis.Client) (*Serve
 }
 
 func (s *Server) Start() {
-	lis, err := net.Listen("tcp", "0.0.0.0:8090")
+	lis, err := net.Listen("tcp", "0.0.0.0:8091")
 	if err != nil {
 		s.log.Error("failed to listen", zap.Error(err))
 		return
@@ -60,6 +60,6 @@ func (s *Server) Start() {
 	srv := grpc.NewServer()
 	pb.RegisterPlayedServer(srv, s)
 
-	s.log.Info("Listening on port :8090")
+	s.log.Info("Listening on port :8091")
 	srv.Serve(lis)
 }
