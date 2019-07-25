@@ -20,11 +20,13 @@ func (s *Server) lpopForever() {
 		res, err := s.rdb.LPop("gateway:events:presence_update").Result()
 		if err != nil {
 			s.log.Error("failed to lpop", zap.Error(err))
+			continue
 		}
 
 		pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(res))
 		if err != nil {
 			s.log.Error("failed to decode presence", zap.Error(err))
+			continue
 		}
 
 		err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)

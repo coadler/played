@@ -9,7 +9,7 @@ require (
 	github.com/gogo/protobuf v1.1.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/gorilla/websocket v1.2.0 // indirect
-	github.com/tatsuworks/gateway v0.0.0-20190725021931-426be1d6ca65
+	github.com/tatsuworks/gateway v0.0.0-20190725030226-789817f76391
 	go.uber.org/zap v1.9.1
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	google.golang.org/genproto v0.0.0-20180627194029-ff3583edef7d // indirect

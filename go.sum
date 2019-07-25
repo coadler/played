@@ -46,6 +46,8 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/tatsuworks/gateway v0.0.0-20190725021931-426be1d6ca65 h1:Vt5ODFayuBoHGvsXejfZgHi969v+vCUuvtj8Qv2v/ww=
 github.com/tatsuworks/gateway v0.0.0-20190725021931-426be1d6ca65/go.mod h1:0EXxR3W5W/diAYVAvMQS4+Cgaoh1O8wIvtn6vbWfNCw=
+github.com/tatsuworks/gateway v0.0.0-20190725030226-789817f76391 h1:X29Ax7mcWexm8m8S/jF1Rl9eHFe8iZvMyT9STddNwY4=
+github.com/tatsuworks/gateway v0.0.0-20190725030226-789817f76391/go.mod h1:0EXxR3W5W/diAYVAvMQS4+Cgaoh1O8wIvtn6vbWfNCw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 go.coder.com/go-tools v0.0.0-20190317003359-0c6a35b74a16/go.mod h1:iKV5yK9t+J5nG9O3uF6KYdPEz3dyfMyB15MN1rbQ8Qw=
 go.uber.org/atomic v1.3.2 h1:2Oa65PReHzfn29GpvgsYwloV9AVFHPDk8tYxt2c2tr4=
