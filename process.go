@@ -22,6 +22,7 @@ func (s *Server) processPlayed(user, game string) error {
 		fsKey   = s.fmtFirstSeenKey(user)
 		curKey  = s.fmtCurrentGameKey(user)
 		lastKey = s.fmtLastUpdatedKey(user)
+		err     error
 	)
 
 	s.db.Transact(func(t fdb.Transaction) (ret interface{}, err error) {
