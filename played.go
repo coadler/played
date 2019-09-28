@@ -74,16 +74,22 @@ func (s *Server) Start() {
 
 	go func() {
 		s.log.Info("ws listening", zap.String("addr", s.wsAddr))
-		http.ListenAndServe(s.wsAddr, nil)
+		http.ListenAndServe(s.wsAddr, &wsserver{s})
 	}()
 
 	<-make(chan struct{})
 }
 
-func (s *Server) listenWS(w http.ResponseWriter, r *http.Request) {
+var _ http.Handler = &wsserver{}
+
+type wsserver struct {
+	s *Server
+}
+
+func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
-		s.log.Error("failed to accept websocket", zap.Error(err))
+		s.s.log.Error("failed to accept websocket", zap.Error(err))
 		return
 	}
 
@@ -91,29 +97,29 @@ func (s *Server) listenWS(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, r, err := c.Reader(r.Context())
 		if err != nil {
-			s.log.Error("failed to get reader", zap.Error(err))
+			s.s.log.Error("failed to get reader", zap.Error(err))
 			c.Close(websocket.StatusAbnormalClosure, "z")
 			return
 		}
 
 		_, err = buf.ReadFrom(r)
 		if err != nil {
-			s.log.Error("failed to read message", zap.Error(err))
+			s.s.log.Error("failed to read message", zap.Error(err))
 			c.Close(websocket.StatusAbnormalClosure, "z")
 			return
 		}
 
 		pres, err := discordetf.DecodePlayedPresence(buf.Bytes())
 		if err != nil {
-			s.log.Error("failed to decode presence", zap.Error(err))
+			s.s.log.Error("failed to decode presence", zap.Error(err))
 			continue
 		}
 
 		go func() {
-			s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
-			err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
+			s.s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
+			err = s.s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
 			if err != nil {
-				s.log.Error("failed to process presence", zap.Error(err))
+				s.s.log.Error("failed to process presence", zap.Error(err))
 			}
 		}()
 	}
