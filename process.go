@@ -25,7 +25,7 @@ func (s *Server) processPlayed(user, game string) error {
 		err     error
 	)
 
-	s.db.Transact(func(t fdb.Transaction) (ret interface{}, err error) {
+	s.db.Transact(func(t fdb.Transaction) (_ interface{}, err error) {
 		// because of the low cost of time.Now and PutUint64 i'd rather
 		// prefer idempotence because this will be retried if there is a conflict
 		//
