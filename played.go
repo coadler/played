@@ -114,6 +114,7 @@ func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			s.s.log.Error("failed to decode presence", zap.Error(err))
 			continue
 		}
+		buf.Reset()
 
 		go func() {
 			s.s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
