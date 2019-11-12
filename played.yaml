@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tatsu.deployment: played
+  name: played
+  namespace: tatsu
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      tatsu.deployment: played
+  template:
+    metadata:
+      labels:
+        tatsu.deployment: played
+    spec:
+      imagePullSecrets:
+        - name: scalewayauth
+      restartPolicy: Always
+      containers:
+        - name: played
+          image: rg.fr-par.scw.cloud/tatsu/played
+          imagePullPolicy: Always
+          ports:
+            - name: playedws
+              containerPort: 80
+            - name: playedgrpc
+              containerPort: 8080
+          tty: true
+          env:
+            - name: FORCE_COLOR
+              value: "1"
+            - name: WS_ADDR
+              value: "0.0.0.0:80"
+            - name: GRPC_ADDR
+              value: "0.0.0.0:8080"
+            - name: REDIS_ADDR
+              value: "10.64.132.51:6379"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: playedws
+            initialDelaySeconds: 1
+            failureThreshold: 4
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: played
+  namespace: tatsu
+spec:
+  type: NodePort
+  externalTrafficPolicy: "Local"
+  selector:
+    tatsu.deployment: played
+  ports:
+    - name: playedws
+      port: 80
+      protocol: TCP
+    - name: playedgrpc
+      port: 8080
+      protocol: TCP
+---

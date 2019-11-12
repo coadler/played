@@ -5,12 +5,14 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/directory"
 	"github.com/apple/foundationdb/bindings/go/src/fdb/subspace"
 	"github.com/coadler/played/pb"
 	"github.com/go-redis/redis"
+	"github.com/paulbellamy/ratecounter"
 	"github.com/tatsuworks/gateway/discordetf"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -27,6 +29,7 @@ type Server struct {
 	wsAddr   string
 
 	subs Subspaces
+	rate *ratecounter.RateCounter
 }
 
 type Subspaces struct {
@@ -43,7 +46,7 @@ func NewServer(logger *zap.Logger, db fdb.Database, rdb *redis.Client, grpcAddr,
 	}
 
 	return &Server{
-		log:      logger,
+		log:      logger.Named("played"),
 		db:       db,
 		rdb:      rdb,
 		grpcAddr: grpcAddr,
@@ -54,7 +57,15 @@ func NewServer(logger *zap.Logger, db fdb.Database, rdb *redis.Client, grpcAddr,
 			Current:     dir.Sub("current"),
 			Played:      dir.Sub("played"),
 		},
+		rate: ratecounter.NewRateCounter(60 * time.Second),
 	}, nil
+}
+
+func (s *Server) logRoutine() {
+	for {
+		time.Sleep(time.Minute)
+		s.log.Info("event report", zap.Float32("rate", float32(s.rate.Rate()/60)))
+	}
 }
 
 func (s *Server) Start() {
@@ -77,19 +88,29 @@ func (s *Server) Start() {
 		http.ListenAndServe(s.wsAddr, &wsserver{s})
 	}()
 
+	go s.logRoutine()
+
 	<-make(chan struct{})
 }
 
 var _ http.Handler = &wsserver{}
 
 type wsserver struct {
-	s *Server
+	*Server
 }
 
 func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/healthz" {
+		w.WriteHeader(200)
+		w.Write([]byte("OK!"))
+		return
+	}
+
+	s.log.Info("accepting websocket")
+
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
-		s.s.log.Error("failed to accept websocket", zap.Error(err))
+		s.log.Error("failed to accept websocket", zap.Error(err))
 		return
 	}
 
@@ -97,30 +118,30 @@ func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, r, err := c.Reader(r.Context())
 		if err != nil {
-			s.s.log.Error("failed to get reader", zap.Error(err))
+			s.log.Error("failed to get reader", zap.Error(err))
 			c.Close(websocket.StatusAbnormalClosure, "z")
 			return
 		}
 
 		_, err = buf.ReadFrom(r)
 		if err != nil {
-			s.s.log.Error("failed to read message", zap.Error(err))
+			s.log.Error("failed to read message", zap.Error(err))
 			c.Close(websocket.StatusAbnormalClosure, "z")
 			return
 		}
 
 		pres, err := discordetf.DecodePlayedPresence(buf.Bytes())
 		if err != nil {
-			s.s.log.Error("failed to decode presence", zap.Error(err))
+			s.log.Error("failed to decode presence", zap.Error(err))
 			continue
 		}
 		buf.Reset()
+		s.rate.Incr(1)
 
 		go func() {
-			s.s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
-			err = s.s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
+			err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
 			if err != nil {
-				s.s.log.Error("failed to process presence", zap.Error(err))
+				s.log.Error("failed to process presence", zap.Error(err))
 			}
 		}()
 	}

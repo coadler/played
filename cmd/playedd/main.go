@@ -10,12 +10,16 @@ import (
 )
 
 var (
-	grpcAddr string
-	wsAddr   string
+	grpcAddr  string
+	wsAddr    string
+	redisAddr string
 )
 
 func init() {
-	flag.StringVar(&grpcAddr, "grpcAddr", "0.0.0.0:", "")
+	flag.StringVar(&grpcAddr, "grpcAddr", "0.0.0.0:8080", "")
+	flag.StringVar(&wsAddr, "wsAddr", "0.0.0.0:80", "")
+	flag.StringVar(&redisAddr, "redisAddr", "localhost:6379", "")
+	flag.Parse()
 }
 
 func main() {
@@ -27,9 +31,7 @@ func main() {
 	fdb.MustAPIVersion(610)
 	db := fdb.MustOpenDefault()
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6380",
-	})
+	rdb := redis.NewClient(&redis.Options{Addr: redisAddr})
 	if _, err := rdb.Ping().Result(); err != nil {
 		logger.Fatal("failed to connect to redis", zap.Error(err))
 	}
@@ -39,5 +41,6 @@ func main() {
 		logger.Fatal("failed to create played server", zap.Error(err))
 	}
 
+	logger.Info("starting", zap.String("grpc", grpcAddr), zap.String("ws", wsAddr))
 	p.Start()
 }
