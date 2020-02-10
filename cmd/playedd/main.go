@@ -31,7 +31,9 @@ func main() {
 	fdb.MustAPIVersion(610)
 	db := fdb.MustOpenDefault()
 
-	rdb := redis.NewClient(&redis.Options{Addr: redisAddr})
+	rdb := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
 	if _, err := rdb.Ping().Result(); err != nil {
 		logger.Fatal("failed to connect to redis", zap.Error(err))
 	}

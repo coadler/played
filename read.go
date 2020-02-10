@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"unsafe"
 
-	"github.com/tatsuworks/gateway/discordetf"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +22,7 @@ func (s *Server) blpopForever() {
 			continue
 		}
 
-		pres, err := discordetf.DecodePlayedPresence(unsafeBytesFromString(res[1]))
+		pres, err := s.enc.DecodePlayedPresence(unsafeBytesFromString(res[1]))
 		if err != nil {
 			s.log.Error("failed to decode presence", zap.Error(err))
 			continue

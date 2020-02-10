@@ -13,7 +13,8 @@ import (
 	"github.com/coadler/played/pb"
 	"github.com/go-redis/redis"
 	"github.com/paulbellamy/ratecounter"
-	"github.com/tatsuworks/gateway/discordetf"
+	"github.com/tatsuworks/gateway/discord"
+	"github.com/tatsuworks/gateway/discord/discordetf"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"nhooyr.io/websocket"
@@ -27,6 +28,7 @@ type Server struct {
 
 	grpcAddr string
 	wsAddr   string
+	enc      discord.Encoding
 
 	subs Subspaces
 	rate *ratecounter.RateCounter
@@ -51,6 +53,7 @@ func NewServer(logger *zap.Logger, db fdb.Database, rdb *redis.Client, grpcAddr,
 		rdb:      rdb,
 		grpcAddr: grpcAddr,
 		wsAddr:   wsAddr,
+		enc:      discordetf.Encoding,
 		subs: Subspaces{
 			FirstSeen:   dir.Sub("first-seen"),
 			LastUpdated: dir.Sub("last_updated"),
@@ -130,7 +133,7 @@ func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		pres, err := discordetf.DecodePlayedPresence(buf.Bytes())
+		pres, err := s.enc.DecodePlayedPresence(buf.Bytes())
 		if err != nil {
 			s.log.Error("failed to decode presence", zap.Error(err))
 			continue
