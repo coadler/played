@@ -3,28 +3,29 @@ package played
 import (
 	"bytes"
 	"encoding/binary"
+	"strconv"
 	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
+	"golang.org/x/xerrors"
 )
 
-func (s *Server) processPlayed(user, game string) error {
-	w, err := s.rdb.Exists(fmtWhitelistKey(user)).Result()
-	if err != nil {
-		return err
-	}
-
-	if w != 1 {
+func (s *Server) processPlayed(userID int64, game string) error {
+	s.whitelistMu.RLock()
+	_, whitelisted := s.whitelists[userID]
+	s.whitelistMu.RUnlock()
+	if !whitelisted {
 		return nil
 	}
 
 	var (
+		user    = strconv.FormatInt(userID, 10)
 		fsKey   = s.fmtFirstSeenKey(user)
 		curKey  = s.fmtCurrentGameKey(user)
 		lastKey = s.fmtLastUpdatedKey(user)
 	)
 
-	s.db.Transact(func(t fdb.Transaction) (_ interface{}, err error) {
+	_, err := s.db.Transact(func(t fdb.Transaction) (_ interface{}, err error) {
 		// because of the low cost of time.Now and PutUint64 i'd rather
 		// prefer idempotence because this will be retried if there is a conflict
 		//
@@ -79,5 +80,5 @@ func (s *Server) processPlayed(user, game string) error {
 		return
 	})
 
-	return err
+	return xerrors.Errorf("failed to transact: %w", err)
 }

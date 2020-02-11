@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -16,6 +18,7 @@ import (
 	"github.com/tatsuworks/gateway/discord"
 	"github.com/tatsuworks/gateway/discord/discordetf"
 	"go.uber.org/zap"
+	"golang.org/x/xerrors"
 	"google.golang.org/grpc"
 	"nhooyr.io/websocket"
 )
@@ -32,6 +35,9 @@ type Server struct {
 
 	subs Subspaces
 	rate *ratecounter.RateCounter
+
+	whitelists  map[int64]struct{}
+	whitelistMu sync.RWMutex
 }
 
 type Subspaces struct {
@@ -71,7 +77,53 @@ func (s *Server) logRoutine() {
 	}
 }
 
+func (s *Server) updateWhitelistRoutine() {
+	for {
+		time.Sleep(time.Minute)
+		newlen, err := s.updateWhitelistCache()
+		if err != nil {
+			s.log.Error("failed to update whitelist cache", zap.Error(err))
+		}
+		s.log.Info("updated whitelist cache", zap.Int("len", newlen))
+	}
+}
+
+func (s *Server) updateWhitelistCache() (int, error) {
+	keys, err := s.rdb.Keys(whitelistPrefix).Result()
+	if err != nil {
+		return 0, xerrors.Errorf("list whitelist keys: %w", err)
+	}
+
+	newMap := make(map[int64]struct{}, len(keys))
+	for _, key := range keys {
+		sp := strings.Split(key, ":")
+		if len(sp) != 3 {
+			s.log.Error("found malformed key, expected 3 parts", zap.Int("parts", len(sp)), zap.String("key", key))
+			continue
+		}
+
+		id, err := strconv.ParseInt(sp[2], 10, 64)
+		if err != nil {
+			return 0, xerrors.Errorf("parse user id: %w", err)
+		}
+
+		newMap[id] = struct{}{}
+	}
+
+	newLen := len(newMap)
+	s.whitelistMu.Lock()
+	s.whitelists = newMap
+	s.whitelistMu.Unlock()
+	return newLen, nil
+}
+
 func (s *Server) Start() {
+	whitelistLen, err := s.updateWhitelistCache()
+	if err != nil {
+		s.log.Fatal("failed to update whitelist cache", zap.Error(err))
+	}
+	s.log.Info("initialized whitelist cache", zap.Int("len", whitelistLen))
+
 	go func() {
 		lis, err := net.Listen("tcp", s.grpcAddr)
 		if err != nil {
@@ -142,7 +194,7 @@ func (s *wsserver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.rate.Incr(1)
 
 		go func() {
-			err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
+			err = s.processPlayed(pres.UserID, pres.Game)
 			if err != nil {
 				s.log.Error("failed to process presence", zap.Error(err))
 			}

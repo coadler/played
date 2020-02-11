@@ -2,7 +2,6 @@ package played
 
 import (
 	"reflect"
-	"strconv"
 	"unsafe"
 
 	"go.uber.org/zap"
@@ -29,7 +28,7 @@ func (s *Server) blpopForever() {
 		}
 
 		s.log.Info("presence", zap.Int64("user", pres.UserID), zap.String("game", pres.Game))
-		err = s.processPlayed(strconv.FormatInt(pres.UserID, 10), pres.Game)
+		err = s.processPlayed(pres.UserID, pres.Game)
 		if err != nil {
 			s.log.Error("failed to process presence", zap.Error(err))
 		}

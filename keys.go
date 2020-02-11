@@ -45,3 +45,5 @@ func (s *Server) fmtCurrentGameKey(user string) fdb.Key {
 func fmtWhitelistKey(user string) string {
 	return fmt.Sprintf("played:whitelist:%s", user)
 }
+
+const whitelistPrefix = "played:whitelist:*"
