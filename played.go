@@ -77,7 +77,7 @@ func (s *Server) logRoutine() {
 	}
 }
 
-func (s *Server) updateWhitelistRoutine() {
+func (s *Server) whitelistRoutine() {
 	for {
 		time.Sleep(time.Minute)
 		newlen, err := s.updateWhitelistCache()
@@ -144,6 +144,7 @@ func (s *Server) Start() {
 	}()
 
 	go s.logRoutine()
+	go s.whitelistRoutine()
 
 	<-make(chan struct{})
 }

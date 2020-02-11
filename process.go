@@ -79,6 +79,9 @@ func (s *Server) processPlayed(userID int64, game string) error {
 		t.Add(s.fmtPlayedUserGame(user, string(curVal)), toAdd[:])
 		return
 	})
+	if err != nil {
+		return xerrors.Errorf("failed to transact: %w", err)
+	}
 
-	return xerrors.Errorf("failed to transact: %w", err)
+	return nil
 }
