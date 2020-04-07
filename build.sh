@@ -10,7 +10,7 @@ if [[ $VERSION == *-dirty ]]; then
   VERSION+="-$(head -c 5 < /dev/urandom | base32)"
 fi
 
-tgt="rg.fr-par.scw.cloud/tatsu/played:$VERSION"
+tgt="gcr.io/tatsu-production/played:$VERSION"
 docker build -t "$tgt" .
 docker push "$tgt"
 

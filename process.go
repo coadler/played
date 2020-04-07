@@ -80,7 +80,7 @@ func (s *Server) processPlayed(userID int64, game string) error {
 		return
 	})
 	if err != nil {
-		return xerrors.Errorf("failed to transact: %w", err)
+		return xerrors.Errorf("transact: %w", err)
 	}
 
 	return nil

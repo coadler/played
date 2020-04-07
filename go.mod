@@ -1,6 +1,7 @@
 module github.com/coadler/played
 
 require (
+	cdr.dev/slog v1.3.0
 	github.com/apple/foundationdb/bindings/go v0.0.0-20190730174800-17cfc127fa57
 	github.com/boltdb/bolt v1.3.1
 	github.com/bwmarrin/discordgo v0.0.0-20180731183658-1593c5552395
